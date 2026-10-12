@@ -1,2 +1,2 @@
 # LaChelona
-Sistema web y móvil para una tienda de distribución de 
+Sistema web y móvil para una tienda distribuidora de productos varios
