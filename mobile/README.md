@@ -1,1 +1,1 @@
-`Aplicación móvil de ITCAFETIN desarrollada en Ionic`
+`Aplicación móvil de LaChelona desarrollada en Ionic`

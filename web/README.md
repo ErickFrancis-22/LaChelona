@@ -1,1 +1,1 @@
-`Documentación técnica y de metodología ágil del proyecto ITCAFETIN`
+`Documentación técnica y de metodología ágil del proyecto LaChelona`
