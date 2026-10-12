@@ -1,1 +1,1 @@
-`API REST de ITCAFETIN desarrollada en Laravel`
+`API REST de LaChelona desarrollada en Laravel`
