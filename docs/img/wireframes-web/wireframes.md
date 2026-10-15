@@ -1,0 +1,1 @@
+aca va ir las capturas de de vue del admin 
