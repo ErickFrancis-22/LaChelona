@@ -61,6 +61,9 @@ export class LoginPage {
     if (err.status === 401) {
       header = 'Credenciales inválidas';
       message = 'Usuario o contraseña incorrectos.';
+    } else if (err.status === 403) {
+      header = 'Cuenta desactivada';
+      message = err.error?.message ?? 'Tu cuenta está desactivada. Contacta al administrador.';
     } else if (err.status === 422) {
       header = 'Datos inválidos';
       const errors = err.error?.errors as Record<string, string[]> | undefined;

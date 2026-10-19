@@ -9,6 +9,12 @@ export interface LoginRequest {
 
 export interface LoginResponse {
   token: string;
+  user: {
+    id: number;
+    name: string;
+    username: string;
+    role: 'ADMIN' | 'CLIENT';
+  };
 }
 
 const TOKEN_KEY = 'auth_token';
