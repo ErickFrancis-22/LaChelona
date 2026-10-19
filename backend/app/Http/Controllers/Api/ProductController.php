@@ -26,8 +26,7 @@ class ProductController extends Controller
 
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'ilike', "%{$search}%")
-                  ->orWhere('code', 'ilike', "%{$search}%")
-                  ->orWhere('presentation', 'ilike', "%{$search}%");
+                  ->orWhere('code', 'ilike', "%{$search}%");
             });
         }
 
@@ -39,7 +38,7 @@ class ProductController extends Controller
     }
 
     /**
-     * Muestra un producto específico por su ID.
+     * Muestra un producto específico por su ID
      */
     public function show(int $id): JsonResponse
     {
@@ -54,7 +53,6 @@ class ProductController extends Controller
             ], 404);
         }
 
-        // Descripción que lleva como tal el detalle
         $data = $this->formatProduct($product);
         $data['description'] = $product->description;
 
@@ -64,7 +62,7 @@ class ProductController extends Controller
     }
 
     /**
-     * Estructura de los datos de un producto.
+     * Estructura de los datos de un producto
      */
     private function formatProduct(Product $product): array
     {
@@ -76,7 +74,6 @@ class ProductController extends Controller
                 'id' => $product->category->id,
                 'name' => $product->category->name,
             ],
-            'presentation' => $product->presentation,
             'package_type' => $product->package_type,
             'units_per_package' => $product->units_per_package,
             'sale_price' => $product->sale_price,
