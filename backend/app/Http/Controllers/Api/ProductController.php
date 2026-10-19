@@ -4,18 +4,34 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Product;
+use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 
 class ProductController extends Controller
 {
     /**
-     * Muestra una lista de productos activos.
+     * Muestra una lista de productos activos
      */
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        $products = Product::with('category')
-            ->where('active', true)
-            ->get();
+        $query = Product::with('category')
+            ->where('active', true);
+
+        if ($request->filled('category_id')) {
+            $query->where('category_id', $request->category_id);
+        }
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'ilike', "%{$search}%")
+                  ->orWhere('code', 'ilike', "%{$search}%")
+                  ->orWhere('presentation', 'ilike', "%{$search}%");
+            });
+        }
+
+        $products = $query->get();
 
         return response()->json([
             'data' => $products->map(fn ($product) => $this->formatProduct($product)),
@@ -38,7 +54,7 @@ class ProductController extends Controller
             ], 404);
         }
 
-        // Se incluye la descripción que es propia del detalle
+        // Descripción que lleva como tal el detalle
         $data = $this->formatProduct($product);
         $data['description'] = $product->description;
 
@@ -48,7 +64,7 @@ class ProductController extends Controller
     }
 
     /**
-     * Formatea la estructura común de los datos de un producto.
+     * Estructura de los datos de un producto.
      */
     private function formatProduct(Product $product): array
     {
