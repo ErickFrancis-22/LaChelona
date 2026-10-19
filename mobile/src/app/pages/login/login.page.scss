@@ -1,0 +1,138 @@
+// El diseño del login es siempre claro, independiente del modo oscuro del sistema
+:host {
+  --navy: #1e2f55;
+  --text: #1b1f2a;
+  --muted: #5f6675;
+  --input-bg: #f3f4f8;
+  --input-border: #dfe2ea;
+  --footer-bg: #f3f4f8;
+}
+
+.login-content {
+  --background: #ffffff;
+}
+
+.login-wrapper {
+  max-width: 420px;
+  margin: 0 auto;
+  padding: 48px 24px 24px;
+}
+
+.logo {
+  display: block;
+  width: 220px;
+  max-width: 70%;
+  margin: 0 auto 20px;
+}
+
+.title {
+  margin: 0;
+  text-align: center;
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--navy);
+}
+
+.subtitle {
+  margin: 8px 0 28px;
+  text-align: center;
+  font-size: 15px;
+  color: var(--muted);
+}
+
+.field {
+  margin-bottom: 20px;
+}
+
+.field-label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.field-input {
+  --background: var(--input-bg);
+  --color: var(--text);
+  --placeholder-color: #8a909c;
+  --placeholder-opacity: 1;
+  --padding-start: 16px;
+  --padding-end: 8px;
+  --highlight-height: 0;
+  min-height: 52px;
+  border: 1px solid var(--input-border);
+  border-radius: 12px;
+  overflow: hidden;
+  font-size: 16px;
+
+  &.has-focus {
+    border-color: var(--navy);
+  }
+
+  &.ion-touched.ion-invalid {
+    border-color: var(--ion-color-danger, #c5000f);
+  }
+
+  ion-input-password-toggle {
+    --color: var(--muted);
+  }
+}
+
+.field-error {
+  display: block;
+  margin-top: 6px;
+  font-size: 13px;
+  color: var(--ion-color-danger, #c5000f);
+}
+
+.forgot {
+  margin: -4px 0 28px;
+  text-align: right;
+
+  ion-text {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--navy);
+  }
+}
+
+.btn-login {
+  --background: var(--navy);
+  --background-activated: #16233f;
+  --color: #ffffff;
+  --border-radius: 12px;
+  --box-shadow: none;
+  height: 56px;
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.login-footer {
+  padding: 16px 24px calc(16px + var(--ion-safe-area-bottom, 0px));
+  background: var(--footer-bg);
+  border-top: 1px solid #e6e8ee;
+  text-align: center;
+}
+
+.footer-text {
+  margin: 0 0 10px;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.btn-register {
+  --color: var(--navy);
+  --border-radius: 12px;
+  --box-shadow: none;
+  max-width: 420px;
+  height: 50px;
+  margin: 0 auto;
+  font-size: 15px;
+  font-weight: 700;
+  text-transform: none;
+  letter-spacing: 0;
+}

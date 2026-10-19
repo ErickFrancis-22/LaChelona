@@ -1,2 +1,19 @@
 // For information on how to create your own theme, please refer to:
 // https://ionicframework.com/docs/theming/
+
+// Paleta de La ChelonApp
+:root {
+  --ion-color-primary: #1e2f55;
+  --ion-color-primary-rgb: 30, 47, 85;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: #1a2a4b;
+  --ion-color-primary-tint: #354466;
+
+  --ion-color-secondary: #ffc107;
+  --ion-color-secondary-rgb: 255, 193, 7;
+  --ion-color-secondary-contrast: #1e2f55;
+  --ion-color-secondary-contrast-rgb: 30, 47, 85;
+  --ion-color-secondary-shade: #e0aa06;
+  --ion-color-secondary-tint: #ffc720;
+}
