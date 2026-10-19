@@ -13,8 +13,9 @@ Route::get('/health', function () {
 });
 
 Route::post('/auth/login', [AuthController::class, 'login']);
+Route::post('/auth/register', [AuthController::class, 'register']);
 
-//Group routes that require authentication by Sanctum
+//Grupo de rutas que requieren autenticación con Sanctum
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/auth/logout', [AuthController::class, 'logout']);
     Route::get('/products', [ProductController::class, 'index']);
