@@ -11,33 +11,33 @@ Este documento describe de manera detallada el flujo de comunicación, el ciclo 
 El siguiente diagrama ilustra la secuencia completa que sigue un pedido desde su creación por parte del cliente en la aplicación móvil, pasando por la validación del inventario en tiempo real con transacciones atómicas de Laravel (`lockForUpdate()`), hasta la entrega final o cancelación.
 
 ```mermaid
-graph 
+graph TD
     classDef startEnd fill:#1e293b,stroke:#3b82f6,stroke-width:2px,color:#fff;
     classDef clientStep fill:#0f172a,stroke:#38bdf8,stroke-width:1.5px,color:#fff;
     classDef adminStep fill:#1e1b4b,stroke:#818cf8,stroke-width:1.5px,color:#fff;
     classDef decision fill:#312e81,stroke:#a78bfa,stroke-width:1.5px,color:#fff;
 
-    A([Inicio: Cliente Navega Catálogo]):::startEnd --> B[Agregar Productos al Carrito]:::clientStep
-    B --> C[Registrar Pedido - Estado: PENDING]:::clientStep
-    C --> D{¿Validar Stock Inicial?}:::decision
+    A(["Inicio: Cliente Navega Catálogo"]):::startEnd --> B["Agregar Productos al Carrito"]:::clientStep
+    B --> C["Registrar Pedido - Estado: PENDING"]:::clientStep
+    C --> D{"¿Validar Stock Inicial?"}:::decision
     
-    D -- Insuficiente --> E[Notificar Error de Stock / Rechazar]:::clientStep
-    D -- Suficiente --> F[Pedido Registrado en PENDING <br/> No se descuenta stock aún]:::clientStep
+    D -- Insuficiente --> E["Notificar Error de Stock / Rechazar"]:::clientStep
+    D -- Suficiente --> F["Pedido Registrado en PENDING <br/> No se descuenta stock aún"]:::clientStep
     
-    F --> G{Acción del Cliente o Admin}:::decision
-    G -- Cliente/Admin Cancela --> H[Cambiar Estado a CANCELLED <br/> Registrar cancelled_at y cancelled_by]:::clientStep
-    G -- Cliente Modifica --> B
-    G -- Admin Aprueba --> I[Iniciar Transacción DB - lockForUpdate]:::adminStep
+    F --> G{"Acción del Cliente o Admin"}:::decision
+    G -- "Cliente/Admin Cancela" --> H["Cambiar Estado a CANCELLED <br/> Registrar cancelled_at y cancelled_by"]:::clientStep
+    G -- "Cliente Modifica" --> B
+    G -- "Admin Aprueba" --> I["Iniciar Transacción DB - lockForUpdate"]:::adminStep
     
-    I --> J{Revalidar Stock en Tiempo Real}:::decision
-    J -- Stock Insuficiente --> K[Rollback Transacción <br/> Rechazar Confirmación]:::adminStep
-    J -- Stock Disponible --> L[Descontar Stock en DB]:::adminStep
+    I --> J{"Revalidar Stock en Tiempo Real"}:::decision
+    J -- "Stock Insuficiente" --> K["Rollback Transacción <br/> Rechazar Confirmación"]:::adminStep
+    J -- "Stock Disponible" --> L["Descontar Stock en DB"]:::adminStep
     
-    L --> M[Registrar Movimiento SALE en inventory_movements]:::adminStep
-    M --> N[Cambiar Estado a CONFIRMED]:::adminStep
-    N --> O[Cambiar Estado a IN_TRANSIT]:::adminStep
-    O --> P[Cambiar Estado a DELIVERED]:::adminStep
-    P --> Q([Fin: Pedido Entregado]):::startEnd
+    L --> M["Registrar Movimiento SALE en inventory_movements"]:::adminStep
+    M --> N["Cambiar Estado a CONFIRMED"]:::adminStep
+    N --> O["Cambiar Estado a IN_TRANSIT"]:::adminStep
+    O --> P["Cambiar Estado a DELIVERED"]:::adminStep
+    P --> Q(["Fin: Pedido Entregado"]):::startEnd
 ```
 
 #### Reglas de Negocio en el Flujo:
