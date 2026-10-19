@@ -14,7 +14,6 @@ class Product extends Model
         'code',
         'name',
         'description',
-        'presentation',
         'package_type',
         'units_per_package',
         'sale_price',

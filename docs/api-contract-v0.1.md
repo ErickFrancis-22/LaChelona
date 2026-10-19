@@ -166,12 +166,11 @@ No requiere cuerpo JSON.
     {
       "id": 1,
       "code": "CC600-12",
-      "name": "Coca-Cola",
+      "name": "Coca-Cola 600 ml",
       "category": {
         "id": 1,
         "name": "Sodas"
       },
-      "presentation": "600 ml",
       "package_type": "FARDO",
       "units_per_package": 12,
       "sale_price": 8.50,
@@ -200,13 +199,12 @@ No requiere cuerpo JSON.
   "data": {
     "id": 1,
     "code": "CC600-12",
-    "name": "Coca-Cola",
+    "name": "Coca-Cola 600 ml",
     "description": "Bebida gaseosa Coca-Cola",
     "category": {
       "id": 1,
       "name": "Sodas"
     },
-    "presentation": "600 ml",
     "package_type": "FARDO",
     "units_per_package": 12,
     "sale_price": 8.50,
