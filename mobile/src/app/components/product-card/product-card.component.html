@@ -1,0 +1,28 @@
+<article class="product" [class.product--unavailable]="!product().available">
+  <div class="product-media" [style.background]="mediaColor()">
+    @if (product().image_url && !imageFailed()) {
+      <img [src]="product().image_url" [alt]="product().name" loading="lazy" (error)="imageFailed.set(true)" />
+    } @else {
+      <ion-icon name="image-outline"></ion-icon>
+    }
+    @if (!product().available) {
+      <span class="product-badge">Agotado</span>
+    }
+  </div>
+
+  <h3 class="product-name">{{ product().name }}</h3>
+  <p class="product-package">{{ packageLabel() }}</p>
+
+  <div class="product-footer">
+    <span class="product-price">{{ product().sale_price | currency: 'USD' : 'symbol' : '1.2-2' }}</span>
+    <!-- La lógica de agregar al carrito se implementa en su propio ticket -->
+    <button
+      class="product-add"
+      type="button"
+      [disabled]="!product().available"
+      [attr.aria-label]="'Agregar ' + product().name"
+    >
+      <ion-icon name="add"></ion-icon>
+    </button>
+  </div>
+</article>

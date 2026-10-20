@@ -1,0 +1,58 @@
+.skeleton {
+  overflow: hidden;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgba(30, 47, 85, 0.08);
+}
+
+.skeleton-media {
+  --border-radius: 0;
+  display: block;
+  height: 126px;
+  margin: 0;
+}
+
+.skeleton-body {
+  padding: 12px;
+}
+
+.skeleton-line {
+  --border-radius: 6px;
+  height: 14px;
+  margin: 0 0 8px;
+}
+
+.skeleton-line--long {
+  width: 75%;
+}
+
+.skeleton-line--short {
+  width: 45%;
+}
+
+.skeleton--product {
+  padding: 10px;
+
+  .skeleton-media {
+    --border-radius: 12px;
+    height: 100px;
+  }
+
+  .skeleton-body {
+    padding: 12px 2px 2px;
+  }
+}
+
+.skeleton-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 16px;
+}
+
+.skeleton-button {
+  --border-radius: 12px;
+  width: 42px;
+  height: 42px;
+  margin: 0;
+}

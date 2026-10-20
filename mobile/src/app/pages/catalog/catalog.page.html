@@ -1,0 +1,120 @@
+<ion-header class="ion-no-border">
+  <div class="hero">
+    @if (userName) {
+      <p class="hero-label">Entregar en</p>
+      <p class="hero-location">
+        <ion-icon name="location-outline"></ion-icon>
+        <span>{{ userName }}</span>
+      </p>
+    }
+    <h1 class="hero-title">¿Qué te llevamos hoy?</h1>
+    <ion-searchbar
+      class="hero-search"
+      placeholder="Buscar en todas las bebidas"
+      [value]="searchTerm()"
+      (ionInput)="onSearch($event)"
+    ></ion-searchbar>
+  </div>
+</ion-header>
+
+<ion-content class="catalog-content">
+  @if (searchTerm()) {
+    <div class="section-header">
+      <h2 class="section-title">Resultados</h2>
+      @if (searchStatus() === 'ready') {
+        <span class="section-hint">{{ searchResults().length }} productos</span>
+      }
+    </div>
+
+    @switch (searchStatus()) {
+      @case ('loading') {
+        <div class="grid">
+          @for (item of skeletons; track item) {
+            <app-skeleton-card variant="product" />
+          }
+        </div>
+      }
+      @case ('error') {
+        <app-state-view
+          type="error"
+          title="Sin conexión"
+          message="No pudimos buscar los productos. Revisa tu conexión e intenta de nuevo."
+          (retry)="retrySearch()"
+        />
+      }
+      @default {
+        @if (searchResults().length) {
+          <div class="grid">
+            @for (product of searchResults(); track product.id) {
+              <app-product-card [product]="product" />
+            }
+          </div>
+        } @else {
+          <app-state-view
+            title="Sin resultados"
+            [message]="'No encontramos bebidas que coincidan con “' + searchTerm() + '”.'"
+          />
+        }
+      }
+    }
+  } @else {
+    <div class="section-header">
+      <h2 class="section-title">Categorías</h2>
+      <span class="section-hint">Elige una para ver sus productos</span>
+    </div>
+
+    @switch (status()) {
+      @case ('loading') {
+        <div class="grid">
+          @for (item of skeletons; track item) {
+            <app-skeleton-card variant="category" />
+          }
+        </div>
+      }
+      @case ('error') {
+        <app-state-view
+          type="error"
+          title="Sin conexión"
+          message="No pudimos cargar las categorías. Revisa tu conexión e intenta de nuevo."
+          (retry)="loadCategories()"
+        />
+      }
+      @default {
+        @if (categories().length) {
+          <div class="grid">
+            @for (category of categories(); track category.id; let i = $index) {
+              <a
+                class="category-card"
+                [routerLink]="['/catalog', category.id]"
+                [state]="{ categoryName: category.name }"
+              >
+                <div class="category-media" [style.background]="pastelColor(i)">
+                  @if (category.image_url && !failedImages().has(category.id)) {
+                    <img
+                      [src]="category.image_url"
+                      [alt]="category.name"
+                      loading="lazy"
+                      (error)="onImageError(category.id)"
+                    />
+                  } @else {
+                    <ion-icon name="image-outline"></ion-icon>
+                  }
+                </div>
+                <div class="category-body">
+                  <h3 class="category-name">{{ category.name }}</h3>
+                  <p class="category-count">
+                    {{ category.products_count }} {{ category.products_count === 1 ? 'producto' : 'productos' }}
+                  </p>
+                </div>
+              </a>
+            }
+          </div>
+        } @else {
+          <app-state-view title="Aún no hay categorías" message="Pronto tendremos bebidas disponibles para tu negocio." />
+        }
+      }
+    }
+  }
+</ion-content>
+
+<app-client-footer />

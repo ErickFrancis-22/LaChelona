@@ -18,6 +18,7 @@ export interface LoginResponse {
 }
 
 const TOKEN_KEY = 'auth_token';
+const USER_NAME_KEY = 'auth_user_name';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -26,7 +27,12 @@ export class AuthService {
   login(credentials: LoginRequest): Observable<LoginResponse> {
     return this.api
       .post<LoginResponse>('auth/login', credentials)
-      .pipe(tap((res) => this.saveToken(res.token)));
+      .pipe(
+        tap((res) => {
+          this.saveToken(res.token);
+          localStorage.setItem(USER_NAME_KEY, res.user.name);
+        }),
+      );
   }
 
   saveToken(token: string): void {
@@ -37,11 +43,16 @@ export class AuthService {
     return localStorage.getItem(TOKEN_KEY);
   }
 
+  getUserName(): string | null {
+    return localStorage.getItem(USER_NAME_KEY);
+  }
+
   isAuthenticated(): boolean {
     return !!this.getToken();
   }
 
   logout(): void {
     localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(USER_NAME_KEY);
   }
 }
