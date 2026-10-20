@@ -1,0 +1,12 @@
+<div class="state" [class.state--error]="type() === 'error'">
+  <div class="state-icon">
+    <ion-icon [name]="icon()"></ion-icon>
+  </div>
+  <h2 class="state-title">{{ title() }}</h2>
+  @if (message()) {
+    <p class="state-message">{{ message() }}</p>
+  }
+  @if (type() === 'error') {
+    <ion-button class="state-retry" (click)="retry.emit()">Reintentar</ion-button>
+  }
+</div>
