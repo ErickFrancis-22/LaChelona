@@ -1,0 +1,42 @@
+.hero {
+  padding: calc(28px + var(--ion-safe-area-top, 0px)) 20px 20px;
+  border-radius: 0 0 24px 24px;
+  background: #1e2f55;
+  color: #ffffff;
+}
+
+.hero-title {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 800;
+}
+
+.placeholder-content {
+  --background: #f3f4f8;
+}
+
+.placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 64px 32px;
+  text-align: center;
+
+  ion-icon {
+    font-size: 48px;
+    color: rgba(30, 47, 85, 0.35);
+  }
+}
+
+.placeholder-title {
+  margin: 16px 0 6px;
+  font-size: 18px;
+  font-weight: 800;
+  color: #1b1f2a;
+}
+
+.placeholder-message {
+  margin: 0;
+  font-size: 14px;
+  color: #5f6675;
+}

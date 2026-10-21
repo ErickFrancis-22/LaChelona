@@ -45,7 +45,7 @@ export class LoginPage {
       next: async () => {
         await loading.dismiss();
         this.form.reset();
-        this.router.navigateByUrl('/catalog', { replaceUrl: true });
+        this.router.navigateByUrl('/tabs/catalog', { replaceUrl: true });
       },
       error: async (err: HttpErrorResponse) => {
         await loading.dismiss();

@@ -85,7 +85,7 @@
             @for (category of categories(); track category.id; let i = $index) {
               <a
                 class="category-card"
-                [routerLink]="['/catalog', category.id]"
+                [routerLink]="['/tabs/catalog', category.id]"
                 [state]="{ categoryName: category.name }"
               >
                 <div class="category-media" [style.background]="pastelColor(i)">
