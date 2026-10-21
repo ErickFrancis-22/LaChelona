@@ -4,7 +4,8 @@
 
 export const environment = {
   production: false,
-  apiUrl: 'http://localhost:8000/api',
+  // 127.0.0.1 y no localhost: artisan serve solo escucha en IPv4 y Windows intenta ::1 primero (~200 ms extra)
+  apiUrl: 'http://127.0.0.1:8000/api',
 };
 
 /*

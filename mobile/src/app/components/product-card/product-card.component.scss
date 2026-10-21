@@ -16,13 +16,17 @@
   position: relative;
   display: grid;
   place-items: center;
+  flex-shrink: 0;
   height: 100px;
   overflow: hidden;
   border-radius: 12px;
   color: rgba(30, 47, 85, 0.35);
   font-size: 30px;
 
+  // Fuera del flujo del grid: la imagen nunca crece más que el recuadro ni tapa el nombre
   img {
+    position: absolute;
+    inset: 0;
     width: 100%;
     height: 100%;
     object-fit: cover;

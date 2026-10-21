@@ -117,6 +117,6 @@ export class CategoryProductsPage implements OnInit {
   }
 
   goBack(): void {
-    this.navCtrl.navigateBack('/catalog');
+    this.navCtrl.navigateBack('/tabs/catalog');
   }
 }

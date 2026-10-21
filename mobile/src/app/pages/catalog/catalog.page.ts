@@ -5,7 +5,7 @@ import { IonContent, IonHeader, IonIcon, IonSearchbar } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import { imageOutline, locationOutline } from 'ionicons/icons';
 import { EMPTY, Subject, catchError, debounceTime, switchMap, tap } from 'rxjs';
-import { CategoryWithCount } from '../../models/category.model';
+import { Category } from '../../models/category.model';
 import { Product } from '../../models/product.model';
 import { AuthService } from '../../services/auth.service';
 import { CategoryService } from '../../services/category.service';
@@ -43,7 +43,7 @@ export class CatalogPage {
   readonly skeletons = [1, 2, 3, 4];
   readonly pastelColor = pastelColor;
 
-  readonly categories = signal<CategoryWithCount[]>([]);
+  readonly categories = signal<Category[]>([]);
   readonly status = signal<LoadStatus>('loading');
   readonly failedImages = signal<ReadonlySet<number>>(new Set());
 
@@ -82,7 +82,7 @@ export class CatalogPage {
 
   loadCategories(): void {
     this.status.set('loading');
-    this.categoryService.getCategoriesWithCount().subscribe({
+    this.categoryService.getCategories().subscribe({
       next: (categories) => {
         this.categories.set(categories);
         this.status.set('ready');

@@ -1,18 +1,17 @@
 import { Component } from '@angular/core';
-import { RouterLink, RouterLinkActive } from '@angular/router';
 import { IonFooter, IonIcon } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { chevronForward, clipboardOutline, homeOutline, personOutline } from 'ionicons/icons';
+import { chevronForward } from 'ionicons/icons';
 
-// Barra de carrito y pestañas: por ahora solo diseño; carrito, pedidos y perfil tienen sus propios tickets
+// Barra de carrito sobre las pestañas (TabsPage): por ahora solo diseño, el carrito tiene su propio ticket
 @Component({
   selector: 'app-client-footer',
   templateUrl: './client-footer.component.html',
   styleUrls: ['./client-footer.component.scss'],
-  imports: [RouterLink, RouterLinkActive, IonFooter, IonIcon],
+  imports: [IonFooter, IonIcon],
 })
 export class ClientFooterComponent {
   constructor() {
-    addIcons({ chevronForward, clipboardOutline, homeOutline, personOutline });
+    addIcons({ chevronForward });
   }
 }
