@@ -11,10 +11,13 @@ class ProductSeeder extends Seeder
     public function run(): void
     {
         // Crear o actualizar las Categorías
+        // Cuando se hace una modificación en la categoría, se actualizan los productos asociados a ella
+        // y no se duplican debido al uso de updateOrCreate
         $sodas = Category::updateOrCreate(
             ['name' => 'Sodas'],
             [
                 'description' => 'Bebidas gaseosas',
+                'image_url' => 'https://eajapccjngzsjajrmowy.supabase.co/storage/v1/object/public/catalog/categories/sodas.png',
                 'sort_order' => 1,
                 'active' => true,
             ]
@@ -24,6 +27,7 @@ class ProductSeeder extends Seeder
             ['name' => 'Aguas'],
             [
                 'description' => 'Agua embotellada',
+                'image_url' => 'https://eajapccjngzsjajrmowy.supabase.co/storage/v1/object/public/catalog/categories/aguas.png',
                 'sort_order' => 2,
                 'active' => true,
             ]
@@ -33,6 +37,7 @@ class ProductSeeder extends Seeder
             ['name' => 'Jugos'],
             [
                 'description' => 'Jugos y néctares',
+                'image_url' => 'https://eajapccjngzsjajrmowy.supabase.co/storage/v1/object/public/catalog/categories/jugos.png',
                 'sort_order' => 3,
                 'active' => true,
             ]
@@ -42,6 +47,7 @@ class ProductSeeder extends Seeder
             ['name' => 'Energéticas'],
             [
                 'description' => 'Bebidas energéticas',
+                'image_url' => 'https://eajapccjngzsjajrmowy.supabase.co/storage/v1/object/public/catalog/categories/energeticas.png',
                 'sort_order' => 4,
                 'active' => true,
             ]
@@ -59,7 +65,7 @@ class ProductSeeder extends Seeder
                 'sale_price' => 8.50,
                 'stock' => 120,
                 'minimum_stock' => 20,
-                'image_url' => '/images/coca-cola-600.jpg',
+                'image_url' => 'https://eajapccjngzsjajrmowy.supabase.co/storage/v1/object/public/catalog/products/coca-cola-600.png',
                 'active' => true,
             ]
         );
@@ -75,7 +81,7 @@ class ProductSeeder extends Seeder
                 'sale_price' => 8.25,
                 'stock' => 80,
                 'minimum_stock' => 20,
-                'image_url' => '/images/sprite-600.jpg',
+                'image_url' => 'https://eajapccjngzsjajrmowy.supabase.co/storage/v1/object/public/catalog/products/sprite-600.png',
                 'active' => true,
             ]
         );
@@ -91,7 +97,7 @@ class ProductSeeder extends Seeder
                 'sale_price' => 6.50,
                 'stock' => 100,
                 'minimum_stock' => 20,
-                'image_url' => '/images/agua-cristal-600.jpg',
+                'image_url' => 'https://eajapccjngzsjajrmowy.supabase.co/storage/v1/object/public/catalog/products/agua-cristal-600.png',
                 'active' => true,
             ]
         );
@@ -107,7 +113,7 @@ class ProductSeeder extends Seeder
                 'sale_price' => 9.75,
                 'stock' => 60,
                 'minimum_stock' => 20,
-                'image_url' => '/images/jugo-naranja-330.jpg',
+                'image_url' => 'https://eajapccjngzsjajrmowy.supabase.co/storage/v1/object/public/catalog/products/jugo-naranja-330.png',
                 'active' => true,
             ]
         );
@@ -123,7 +129,7 @@ class ProductSeeder extends Seeder
                 'sale_price' => 12.50,
                 'stock' => 40,
                 'minimum_stock' => 20,
-                'image_url' => '/images/energetica-250.jpg',
+                'image_url' => 'https://eajapccjngzsjajrmowy.supabase.co/storage/v1/object/public/catalog/products/energetica-250.png',
                 'active' => true,
             ]
         );
