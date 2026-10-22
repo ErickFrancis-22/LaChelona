@@ -35,13 +35,11 @@ class OrderController extends Controller
         );
 
         $order = DB::transaction(function () use ($prepared) {
-
             $order = Order::create([
                 'client_id' => $prepared['client']->id,
                 'status' => $prepared['status'],
                 'total' => $prepared['total'],
                 'customer_comment' => $prepared['customer_comment'],
-
                 'delivery_address' => $prepared['delivery']['delivery_address'],
                 'delivery_reference' => $prepared['delivery']['delivery_reference'],
                 'delivery_latitude' => $prepared['delivery']['delivery_latitude'],
@@ -66,5 +64,64 @@ class OrderController extends Controller
             'message' => 'Pedido creado correctamente.',
             'data' => $order,
         ], 201);
+    }
+
+    /**
+     * Muestra la lista de pedidos del cliente autenticado.
+     */
+    public function index(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $client = $user->client;
+
+        if (! $client) {
+            return response()->json([
+                'message' => 'Perfil de cliente no encontrado.',
+            ], 404);
+        }
+
+        $orders = Order::where('client_id', $client->id)
+            ->orderByDesc('created_at')
+            ->get([
+                'id',
+                'status',
+                'total',
+                'customer_comment',
+                'created_at',
+            ]);
+
+        return response()->json([
+            'data' => $orders,
+        ]);
+    }
+
+    /**
+     * Muestra el detalle de un pedido específico del cliente autenticado.
+     */
+    public function show(Request $request, int $id): JsonResponse
+    {
+        $user = $request->user();
+        $client = $user->client;
+
+        if (! $client) {
+            return response()->json([
+                'message' => 'Perfil de cliente no encontrado.',
+            ], 404);
+        }
+
+        $order = Order::with(['details.product'])
+            ->where('client_id', $client->id)
+            ->where('id', $id)
+            ->first();
+
+        if (! $order) {
+            return response()->json([
+                'message' => 'Pedido no encontrado.',
+            ], 404);
+        }
+
+        return response()->json([
+            'data' => $order,
+        ]);
     }
 }
