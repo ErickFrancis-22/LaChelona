@@ -1,6 +1,9 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
 
 const usuario = ref('')
 const contrasena = ref('')
@@ -14,7 +17,10 @@ async function ingresar() {
   error.value = ''
   exito.value = ''
 
-  if (!usuario.value.trim() || !contrasena.value) {
+  const username = usuario.value.trim()
+  const password = contrasena.value
+
+  if (!username || !password) {
     error.value = 'Ingresa tu usuario y contraseña.'
     return
   }
@@ -25,33 +31,70 @@ async function ingresar() {
     const respuesta = await fetch('/api/auth/login', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-      usuario: usuario.value.trim(),
-      contrasena: contrasena.value
-      })
+        username,
+        password,
+      }),
     })
 
     const datos = await respuesta.json().catch(() => ({}))
 
     if (!respuesta.ok) {
+      if (respuesta.status === 401) {
+        throw new Error('Usuario o contraseña incorrectos.')
+      }
+
+      if (respuesta.status === 403) {
+        throw new Error(
+          datos.message ||
+          'Usuario inactivo o sin permisos para ingresar.',
+        )
+      }
+
+      if (respuesta.status === 422) {
+        throw new Error(
+          datos.message ||
+          'Verifica que hayas ingresado correctamente los datos.',
+        )
+      }
+
       throw new Error(
         datos.message ||
-        datos.mensaje ||
-        'Usuario o contraseña incorrectos.'
+        'No se pudo iniciar sesión. Intenta nuevamente.',
       )
     }
 
-    if (datos.token) {
-      const almacenamiento = mantenerSesion.value
-        ? localStorage
-        : sessionStorage
-
-      almacenamiento.setItem('token', datos.token)
+    if (!datos.token || !datos.user) {
+      throw new Error(
+        'La API no devolvió el token y los datos del usuario esperados.',
+      )
     }
 
+    if (String(datos.user.role).toUpperCase() !== 'ADMIN') {
+      throw new Error(
+        'Acceso denegado. Solo los usuarios ADMIN pueden ingresar.',
+      )
+    }
+
+    // Evitar conservar sesiones anteriores de otra cuenta.
+    localStorage.removeItem('token')
+    localStorage.removeItem('usuario')
+    sessionStorage.removeItem('token')
+    sessionStorage.removeItem('usuario')
+
+    const almacenamiento = mantenerSesion.value
+      ? localStorage
+      : sessionStorage
+
+    almacenamiento.setItem('token', datos.token)
+    almacenamiento.setItem('usuario', JSON.stringify(datos.user))
+
     exito.value = 'Inicio de sesión correcto.'
+
+    await router.push({ name: 'admin' })
   } catch (e: unknown) {
     error.value =
       e instanceof Error
@@ -61,30 +104,17 @@ async function ingresar() {
     cargando.value = false
   }
 }
-
-//function recuperarContrasena() {
-//  error.value = ''
-  //exito.value = ''
-  //error.value =
-    
-  //'La recuperación de contraseña estará disponible próximamente.'
-//}
 </script>
 
 <template>
   <main class="login-page">
-
-    
     <section class="brand-panel">
       <div class="brand-content">
-
-      
-<img
-  src="/logo-chelonapp-oscuro.png"
-  alt="Logo La ChelonAPP"
-  class="brand-logo"
-/>
-
+        <img
+          src="/logo-chelonapp-oscuro.png"
+          alt="Logo La ChelonAPP"
+          class="brand-logo"
+        />
 
         <span class="brand-badge">
           PANEL DE ADMINISTRACIÓN
@@ -95,22 +125,17 @@ async function ingresar() {
           <br class="desktop-break" />
           distribuidora en un solo lugar.
         </p>
-
       </div>
     </section>
 
-    
     <section class="form-panel">
       <div class="login-container">
-
         <header class="form-header">
           <h1>Iniciar sesión</h1>
           <p>Ingresa con tu cuenta de administrador.</p>
         </header>
 
         <form @submit.prevent="ingresar" novalidate>
-
-          <!-- USUARIO -->
           <div class="form-group">
             <label for="usuario">Usuario</label>
 
@@ -155,6 +180,7 @@ async function ingresar() {
                   fill="none"
                   stroke="currentColor"
                   stroke-width="1.8"
+                  aria-hidden="true"
                 >
                   <path
                     d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"
@@ -168,6 +194,7 @@ async function ingresar() {
                   fill="none"
                   stroke="currentColor"
                   stroke-width="1.8"
+                  aria-hidden="true"
                 >
                   <path d="M3 3l18 18" />
                   <path
@@ -181,32 +208,16 @@ async function ingresar() {
             </div>
           </div>
 
-         
-<!--
-OPCIONES
-<div class="form-options">
-
-  <label class="remember-option">
-    <input
-      v-model="mantenerSesion"
-      type="checkbox"
-      :disabled="cargando"
-    />
-    <span>Mantener sesión iniciada</span>
-  </label>
-
-  <button
-    type="button"
-    class="forgot-link"
-    @click="recuperarContrasena"
-  >
-    ¿Olvidaste tu contraseña?
-  </button>
-
-</div>
--->
-
-
+          <div class="form-options">
+            <label class="remember-option">
+              <input
+                v-model="mantenerSesion"
+                type="checkbox"
+                :disabled="cargando"
+              />
+              <span>Mantener sesión iniciada</span>
+            </label>
+          </div>
 
           <div
             v-if="error"
@@ -216,7 +227,6 @@ OPCIONES
             {{ error }}
           </div>
 
-          <!-- MENSAJE DE ÉXITO -->
           <div
             v-if="exito"
             class="message success-message"
@@ -225,7 +235,6 @@ OPCIONES
             {{ exito }}
           </div>
 
-        
           <button
             type="submit"
             class="login-button"
@@ -234,11 +243,9 @@ OPCIONES
             <span v-if="cargando" class="spinner"></span>
             {{ cargando ? 'Ingresando...' : 'Ingresar' }}
           </button>
-
         </form>
       </div>
     </section>
-
   </main>
 </template>
 
@@ -279,8 +286,6 @@ input {
   width: 100%;
   min-height: 100vh;
 }
-
-/* PANEL AZUL */
 
 .brand-panel {
   display: flex;
@@ -325,8 +330,6 @@ input {
   line-height: 1.6;
 }
 
-/* PANEL DEL FORMULARIO */
-
 .form-panel {
   display: flex;
   align-items: center;
@@ -338,7 +341,7 @@ input {
 
 .login-container {
   width: 100%;
-  max-width: 257px;
+  max-width: 300px;
 }
 
 .form-header {
@@ -360,8 +363,6 @@ input {
   line-height: 1.5;
 }
 
-/* CAMPOS */
-
 .form-group {
   margin-bottom: 15px;
 }
@@ -376,14 +377,14 @@ input {
 
 .form-group input {
   width: 100%;
-  height: 32px;
+  height: 36px;
   padding: 0 10px;
   border: 1px solid #dce3ed;
   border-radius: 7px;
   outline: none;
   background: #fff;
   color: #243753;
-  font-size: 10px;
+  font-size: 12px;
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 
@@ -411,7 +412,7 @@ input {
   display: grid;
   place-items: center;
   width: 34px;
-  height: 32px;
+  height: 36px;
   padding: 0;
   border: none;
   background: transparent;
@@ -420,18 +421,14 @@ input {
 }
 
 .eye-button svg {
-  width: 14px;
-  height: 14px;
+  width: 16px;
+  height: 16px;
 }
-
-/* OPCIONES */
 
 .form-options {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  margin: 20px 0 21px;
+  margin: 18px 0;
 }
 
 .remember-option {
@@ -439,45 +436,16 @@ input {
   align-items: center;
   gap: 7px;
   color: #34445d;
-  font-size: 9px;
-  white-space: nowrap;
+  font-size: 11px;
   cursor: pointer;
 }
 
 .remember-option input {
-  appearance: none;
-  flex-shrink: 0;
-  width: 13px;
-  height: 13px;
+  width: 14px;
+  height: 14px;
   margin: 0;
-  border: 1px solid #aab5c4;
-  border-radius: 2px;
-  background: white;
-  cursor: pointer;
+  accent-color: #1d355c;
 }
-
-.remember-option input:checked {
-  border-color: #1d355c;
-  background: #1d355c;
-  box-shadow: inset 0 0 0 2px white;
-}
-
-.forgot-link {
-  padding: 4px 0;
-  border: 0;
-  background: transparent;
-  color: #203b64;
-  font-size: 9px;
-  font-weight: 700;
-  white-space: nowrap;
-  cursor: pointer;
-}
-
-.forgot-link:hover {
-  text-decoration: underline;
-}
-
-/* BOTÓN */
 
 .login-button {
   display: flex;
@@ -485,13 +453,13 @@ input {
   justify-content: center;
   gap: 9px;
   width: 100%;
-  min-height: 34px;
+  min-height: 38px;
   padding: 8px 12px;
   border: none;
   border-radius: 8px;
   background: #1d355c;
   color: white;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   cursor: pointer;
   transition: background 0.2s;
@@ -506,10 +474,8 @@ input {
   cursor: wait;
 }
 
-/* MENSAJES */
-
 .message {
-  margin: -8px 0 14px;
+  margin: 0 0 14px;
   padding: 9px 10px;
   border-radius: 6px;
   font-size: 11px;
@@ -543,8 +509,6 @@ input {
     transform: rotate(360deg);
   }
 }
-
-/* DISEÑO RESPONSIVE */
 
 @media (max-width: 650px) {
   .login-page {
@@ -597,8 +561,7 @@ input {
     margin: 20px 0;
   }
 
-  .remember-option,
-  .forgot-link {
+  .remember-option {
     font-size: 11px;
   }
 
