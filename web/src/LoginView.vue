@@ -1,6 +1,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 
 interface Usuario {
   id: number
@@ -15,6 +16,8 @@ interface RespuestaLogin {
   message?: string
   errors?: Record<string, string[]>
 }
+
+const router = useRouter()
 
 const usuario = ref('')
 const contrasena = ref('')
@@ -88,7 +91,7 @@ async function ingresar() {
       )
     }
 
-    // Limpiar la sesión anterior.
+    // Limpiar cualquier sesión anterior.
     localStorage.removeItem('token')
     localStorage.removeItem('usuario')
     sessionStorage.removeItem('token')
@@ -102,10 +105,8 @@ async function ingresar() {
     almacenamiento.setItem('token', datos.token)
     almacenamiento.setItem('usuario', JSON.stringify(datos.user))
 
-    exito.value = `Inicio de sesión correcto. Bienvenido, ${
-      datos.user.name || datos.user.username
-    }.`
-    contrasena.value = ''
+    // Redirigir al panel que conectará tu compañero.
+    await router.push('/admin')
   } catch (e: unknown) {
     error.value =
       e instanceof TypeError
@@ -149,6 +150,7 @@ async function ingresar() {
         <form @submit.prevent="ingresar" novalidate>
           <div class="form-group">
             <label for="usuario">Usuario</label>
+
             <input
               id="usuario"
               v-model="usuario"
@@ -237,7 +239,11 @@ async function ingresar() {
             {{ exito }}
           </div>
 
-          <button type="submit" class="login-button" :disabled="cargando">
+          <button
+            type="submit"
+            class="login-button"
+            :disabled="cargando"
+          >
             <span v-if="cargando" class="spinner"></span>
             {{ cargando ? 'Ingresando...' : 'Ingresar' }}
           </button>
@@ -252,147 +258,118 @@ async function ingresar() {
   box-sizing: border-box;
 }
 
-:root {
-  font-family: Arial, Helvetica, sans-serif;
-  color: #172b4d;
-  background: #f4f6fa;
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-}
-
-html,
-body,
-#app {
-  margin: 0;
-  min-width: 320px;
-  min-height: 100%;
-}
-
-body {
-  min-height: 100vh;
-}
-
-button,
-input {
-  font: inherit;
-}
-
 .login-page {
+  min-height: 100vh;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  width: 100%;
-  min-height: 100vh;
+  background: #ffffff;
+  color: #17243a;
+  font-family: Arial, Helvetica, sans-serif;
 }
 
 .brand-panel {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 40px;
-  background: #1d355c;
-  color: #fff;
+  padding: 48px;
+  background: #10243d;
+  color: #ffffff;
 }
 
 .brand-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
   width: 100%;
+  max-width: 440px;
   text-align: center;
 }
 
 .brand-logo {
   display: block;
-  width: 270px;
-  max-width: 100%;
-  height: auto;
+  width: min(100%, 300px);
+  max-height: 180px;
   object-fit: contain;
-  margin-bottom: 13px;
+  margin: 0 auto 38px;
 }
 
 .brand-badge {
   display: inline-block;
-  padding: 6px 15px;
+  padding: 10px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
   border-radius: 30px;
-  background: #ffc400;
-  color: #142745;
-  font-size: 10px;
-  font-weight: 800;
+  color: #e5c98b;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
 }
 
 .brand-description {
-  margin: 13px 0 0;
-  color: #c1d0e7;
-  font-size: 12px;
-  line-height: 1.6;
+  margin-top: 24px;
+  color: #d2dbe6;
+  font-size: 15px;
+  line-height: 1.8;
 }
 
 .form-panel {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-width: 0;
-  padding: 40px;
-  background: #f4f6fa;
+  padding: 40px 28px;
 }
 
 .login-container {
   width: 100%;
-  max-width: 300px;
+  max-width: 410px;
 }
 
 .form-header {
-  margin-bottom: 19px;
+  margin-bottom: 35px;
 }
 
 .form-header h1 {
-  margin: 0 0 5px;
-  color: #15243d;
-  font-size: 23px;
-  font-weight: 800;
-  letter-spacing: -0.8px;
+  margin: 0 0 12px;
+  color: #10243d;
+  font-size: 32px;
+  font-weight: 700;
 }
 
 .form-header p {
   margin: 0;
-  color: #65748b;
-  font-size: 10px;
-  line-height: 1.5;
+  color: #7a8493;
+  font-size: 14px;
+  line-height: 1.6;
 }
 
 .form-group {
-  margin-bottom: 15px;
+  margin-bottom: 23px;
 }
 
 .form-group > label {
   display: block;
-  margin-bottom: 5px;
-  color: #182b49;
-  font-size: 10px;
+  margin-bottom: 9px;
+  color: #25344a;
+  font-size: 13px;
   font-weight: 700;
 }
 
 .form-group input {
   width: 100%;
-  height: 36px;
-  padding: 0 10px;
-  border: 1px solid #dce3ed;
+  min-height: 49px;
+  padding: 13px 15px;
+  border: 1px solid #dce2e9;
   border-radius: 7px;
   outline: none;
-  background: #fff;
-  color: #243753;
-  font-size: 12px;
+  background: #ffffff;
+  color: #17243a;
+  font-size: 14px;
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 
-.form-group input::placeholder {
-  color: #8995a8;
+.form-group input:focus {
+  border-color: #244c78;
+  box-shadow: 0 0 0 3px rgba(36, 76, 120, 0.1);
 }
 
-.form-group input:focus {
-  border-color: #365c94;
-  box-shadow: 0 0 0 3px rgb(54 92 148 / 10%);
+.form-group input::placeholder {
+  color: #a3acb8;
 }
 
 .password-container {
@@ -400,177 +377,166 @@ input {
 }
 
 .password-container input {
-  padding-right: 38px;
+  padding-right: 50px;
 }
 
 .eye-button {
   position: absolute;
-  top: 0;
-  right: 0;
-  display: grid;
-  place-items: center;
-  width: 34px;
-  height: 36px;
-  padding: 0;
+  top: 50%;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  padding: 4px;
   border: none;
   background: transparent;
-  color: #687891;
+  color: #778395;
   cursor: pointer;
+  transform: translateY(-50%);
 }
 
 .eye-button svg {
-  width: 16px;
-  height: 16px;
+  width: 21px;
+  height: 21px;
 }
 
 .form-options {
   display: flex;
   align-items: center;
-  margin: 18px 0;
+  justify-content: space-between;
+  margin: 2px 0 25px;
 }
 
 .remember-option {
   display: flex;
   align-items: center;
-  gap: 7px;
-  color: #34445d;
-  font-size: 11px;
+  gap: 9px;
+  color: #596579;
+  font-size: 13px;
   cursor: pointer;
 }
 
 .remember-option input {
-  width: 14px;
-  height: 14px;
-  margin: 0;
-  accent-color: #1d355c;
+  width: 15px;
+  height: 15px;
+  accent-color: #183d64;
+  cursor: pointer;
 }
 
 .login-button {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 9px;
+  gap: 10px;
   width: 100%;
-  min-height: 38px;
-  padding: 8px 12px;
+  min-height: 49px;
+  padding: 13px 18px;
   border: none;
-  border-radius: 8px;
-  background: #1d355c;
-  color: #fff;
-  font-size: 12px;
+  border-radius: 7px;
+  background: #173b61;
+  color: #ffffff;
+  font-size: 14px;
   font-weight: 700;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background 0.2s, transform 0.2s;
 }
 
 .login-button:hover:not(:disabled) {
-  background: #294b7c;
+  background: #24517e;
+}
+
+.login-button:active:not(:disabled) {
+  transform: scale(0.99);
 }
 
 .login-button:disabled {
-  opacity: 0.75;
-  cursor: wait;
+  opacity: 0.7;
+  cursor: not-allowed;
 }
 
 .message {
-  margin: 0 0 14px;
-  padding: 9px 10px;
+  margin-bottom: 18px;
+  padding: 12px 14px;
   border-radius: 6px;
-  font-size: 11px;
-  line-height: 1.45;
-  overflow-wrap: anywhere;
+  font-size: 13px;
+  line-height: 1.5;
 }
 
 .error-message {
-  border: 1px solid #f4cccc;
-  background: #fff0f0;
-  color: #a12626;
+  border: 1px solid #f1c5c5;
+  background: #fff1f1;
+  color: #a12d2d;
 }
 
 .success-message {
-  border: 1px solid #c6ead2;
-  background: #eaf8ef;
-  color: #17653a;
+  border: 1px solid #bde3ce;
+  background: #effaf3;
+  color: #216b40;
 }
 
 .spinner {
-  width: 13px;
-  height: 13px;
-  border: 2px solid rgb(255 255 255 / 45%);
-  border-top-color: #fff;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.45);
+  border-top-color: #ffffff;
   border-radius: 50%;
-  animation: spin 0.7s linear infinite;
+  animation: girar 0.7s linear infinite;
 }
 
-@keyframes spin {
+@keyframes girar {
   to {
     transform: rotate(360deg);
   }
 }
 
-@media (max-width: 650px) {
+@media (max-width: 800px) {
   .login-page {
     grid-template-columns: 1fr;
   }
 
   .brand-panel {
     min-height: 235px;
-    padding: 28px 20px 24px;
+    padding: 30px 24px;
   }
 
   .brand-logo {
-    width: 220px;
-    margin-bottom: 8px;
+    width: min(100%, 190px);
+    max-height: 95px;
+    margin-bottom: 20px;
+  }
+
+  .brand-badge {
+    padding: 8px 12px;
+    font-size: 10px;
+  }
+
+  .brand-description {
+    margin-top: 14px;
+    font-size: 13px;
   }
 
   .form-panel {
-    align-items: flex-start;
-    padding: 35px 24px 45px;
-  }
-
-  .login-container {
-    max-width: 360px;
-    margin: 0 auto;
+    padding: 40px 24px 50px;
   }
 
   .form-header h1 {
-    font-size: 25px;
-  }
-
-  .form-header p {
-    font-size: 12px;
-  }
-
-  .form-group > label {
-    font-size: 12px;
-  }
-
-  .form-group input,
-  .eye-button {
-    height: 42px;
-  }
-
-  .form-group input {
-    font-size: 13px;
-  }
-
-  .form-options {
-    flex-wrap: wrap;
-    margin: 20px 0;
-  }
-
-  .login-button {
-    min-height: 42px;
-    font-size: 13px;
+    font-size: 28px;
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    transition-duration: 0.01ms !important;
+@media (max-width: 380px) {
+  .desktop-break {
+    display: none;
+  }
+
+  .brand-panel {
+    padding: 25px 18px;
+  }
+
+  .form-panel {
+    padding: 32px 18px 40px;
   }
 }
 </style>
