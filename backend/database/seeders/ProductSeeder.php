@@ -10,14 +10,13 @@ class ProductSeeder extends Seeder
 {
     public function run(): void
     {
-        // Crear o actualizar las Categorías
-        // Cuando se hace una modificación en la categoría, se actualizan los productos asociados a ella
-        // y no se duplican debido al uso de updateOrCreate
+        //Crear o actualizar las Categorías
+
         $sodas = Category::updateOrCreate(
             ['name' => 'Sodas'],
             [
                 'description' => 'Bebidas gaseosas',
-                'image_url' => 'https://eajapccjngzsjajrmowy.supabase.co/storage/v1/object/public/catalog/categories/sodas.png',
+                'image_url' => 'https://eajapccjngzsjajrmowy.supabase.co/storage/v1/object/public/catalog/categories/sodas.jpeg',
                 'sort_order' => 1,
                 'active' => true,
             ]
@@ -27,33 +26,100 @@ class ProductSeeder extends Seeder
             ['name' => 'Aguas'],
             [
                 'description' => 'Agua embotellada',
-                'image_url' => 'https://eajapccjngzsjajrmowy.supabase.co/storage/v1/object/public/catalog/categories/aguas.png',
+                'image_url' => 'https://eajapccjngzsjajrmowy.supabase.co/storage/v1/object/public/catalog/categories/aguas.jpeg',
                 'sort_order' => 2,
                 'active' => true,
             ]
         );
 
-        $jugos = Category::updateOrCreate(
-            ['name' => 'Jugos'],
-            [
-                'description' => 'Jugos y néctares',
-                'image_url' => 'https://eajapccjngzsjajrmowy.supabase.co/storage/v1/object/public/catalog/categories/jugos.png',
+        // Renombrar o crear categoría: Jugos y tés -> Jugos
+        $jugos = Category::where('name', 'Jugos y tés')->first();
+
+        if ($jugos) {
+            $jugos->update([
+                'name' => 'Jugos',
+                'description' => 'Jugos',
+                'image_url' => 'https://eajapccjngzsjajrmowy.supabase.co/storage/v1/object/public/catalog/categories/jugos.jpeg',
                 'sort_order' => 3,
                 'active' => true,
-            ]
-        );
+            ]);
+        } else {
+            $jugos = Category::updateOrCreate(
+                ['name' => 'Jugos'],
+                [
+                    'description' => 'Jugos',
+                    'image_url' => 'https://eajapccjngzsjajrmowy.supabase.co/storage/v1/object/public/catalog/categories/jugos.jpeg',
+                    'sort_order' => 3,
+                    'active' => true,
+                ]
+            );
+        }
 
-        $energeticas = Category::updateOrCreate(
-            ['name' => 'Energéticas'],
-            [
-                'description' => 'Bebidas energéticas',
-                'image_url' => 'https://eajapccjngzsjajrmowy.supabase.co/storage/v1/object/public/catalog/categories/energeticas.png',
+        // Renombrar o crear categoría: Energéticas -> Bebidas energizantes
+        $energeticas = Category::where('name', 'Energéticas')->first();
+
+        if ($energeticas) {
+            $energeticas->update([
+                'name' => 'Bebidas energizantes',
+                'description' => 'Bebidas energizantes',
+                'image_url' => 'https://eajapccjngzsjajrmowy.supabase.co/storage/v1/object/public/catalog/categories/energeticas.jpeg',
                 'sort_order' => 4,
+                'active' => true,
+            ]);
+        } else {
+            $energeticas = Category::updateOrCreate(
+                ['name' => 'Bebidas energizantes'],
+                [
+                    'description' => 'Bebidas energizantes',
+                    'image_url' => 'https://eajapccjngzsjajrmowy.supabase.co/storage/v1/object/public/catalog/categories/energeticas.jpeg',
+                    'sort_order' => 4,
+                    'active' => true,
+                ]
+            );
+        }
+
+        $isotonicas = Category::updateOrCreate(
+            ['name' => 'Isotónicas'],
+            [
+                'description' => 'Bebidas isotónicas y deportivas',
+                'image_url' => null,
+                'sort_order' => 5,
                 'active' => true,
             ]
         );
 
-        // Crear o actualizar los Productos
+        $minerales = Category::updateOrCreate(
+            ['name' => 'Minerales'],
+            [
+                'description' => 'Aguas minerales y bebidas minerales',
+                'image_url' => 'https://eajapccjngzsjajrmowy.supabase.co/storage/v1/object/public/catalog/categories/minerales.jpeg',
+                'sort_order' => 6,
+                'active' => true,
+            ]
+        );
+
+        $alcoholicas = Category::updateOrCreate(
+            ['name' => 'Alcohólicas'],
+            [
+                'description' => 'Bebidas alcohólicas',
+                'image_url' => 'https://eajapccjngzsjajrmowy.supabase.co/storage/v1/object/public/catalog/categories/alcoholicas.jpeg',
+                'sort_order' => 7,
+                'active' => true,
+            ]
+        );
+
+        $tes = Category::updateOrCreate(
+            ['name' => 'Tés'],
+            [
+                'description' => 'Tés',
+                'image_url' => null,
+                'sort_order' => 8,
+                'active' => true,
+            ]
+        );
+
+        //Crear o actualizar los Productos
+
         Product::updateOrCreate(
             ['code' => 'CC600-12'],
             [
