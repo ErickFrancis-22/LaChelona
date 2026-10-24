@@ -10,54 +10,79 @@ class ProductSeeder extends Seeder
 {
     public function run(): void
     {
-        // Crear o actualizar las Categorías
-        // Cuando se hace una modificación en la categoría, se actualizan los productos asociados a ella
-        // y no se duplican debido al uso de updateOrCreate
-        $sodas = Category::updateOrCreate(
-            ['name' => 'Sodas'],
-            [
+        //Renames de categorías antiguas si existen
+        Category::where('name', 'Jugos y tés')->update(['name' => 'Jugos']);
+        Category::where('name', 'Energéticas')->update(['name' => 'Bebidas energizantes']);
+
+        //Definición y actualización de Categorías
+        $categoriesData = [
+            'Sodas' => [
                 'description' => 'Bebidas gaseosas',
-                'image_url' => 'https://eajapccjngzsjajrmowy.supabase.co/storage/v1/object/public/catalog/categories/sodas.png',
+                'image_url' => 'https://eajapccjngzsjajrmowy.supabase.co/storage/v1/object/public/catalog/categories/sodas.jpeg',
                 'sort_order' => 1,
                 'active' => true,
-            ]
-        );
-
-        $aguas = Category::updateOrCreate(
-            ['name' => 'Aguas'],
-            [
+            ],
+            'Aguas' => [
                 'description' => 'Agua embotellada',
-                'image_url' => 'https://eajapccjngzsjajrmowy.supabase.co/storage/v1/object/public/catalog/categories/aguas.png',
+                'image_url' => 'https://eajapccjngzsjajrmowy.supabase.co/storage/v1/object/public/catalog/categories/aguas.jpeg',
                 'sort_order' => 2,
                 'active' => true,
-            ]
-        );
-
-        $jugos = Category::updateOrCreate(
-            ['name' => 'Jugos'],
-            [
-                'description' => 'Jugos y néctares',
-                'image_url' => 'https://eajapccjngzsjajrmowy.supabase.co/storage/v1/object/public/catalog/categories/jugos.png',
+            ],
+            'Jugos' => [
+                'description' => 'Jugos',
+                'image_url' => 'https://eajapccjngzsjajrmowy.supabase.co/storage/v1/object/public/catalog/categories/jugos.jpeg',
                 'sort_order' => 3,
                 'active' => true,
-            ]
-        );
-
-        $energeticas = Category::updateOrCreate(
-            ['name' => 'Energéticas'],
-            [
-                'description' => 'Bebidas energéticas',
-                'image_url' => 'https://eajapccjngzsjajrmowy.supabase.co/storage/v1/object/public/catalog/categories/energeticas.png',
+            ],
+            'Bebidas energizantes' => [
+                'description' => 'Bebidas energizantes',
+                'image_url' => 'https://eajapccjngzsjajrmowy.supabase.co/storage/v1/object/public/catalog/categories/energeticas.jpeg',
                 'sort_order' => 4,
                 'active' => true,
-            ]
-        );
+            ],
+            'Isotónicas' => [
+                'description' => 'Bebidas isotónicas y deportivas',
+                'image_url' => 'https://eajapccjngzsjajrmowy.supabase.co/storage/v1/object/public/catalog/categories/isotonicas.jpeg',
+                'sort_order' => 5,
+                'active' => true,
+            ],
+            'Minerales' => [
+                'description' => 'Aguas minerales y bebidas minerales',
+                'image_url' => 'https://eajapccjngzsjajrmowy.supabase.co/storage/v1/object/public/catalog/categories/minerales.jpeg',
+                'sort_order' => 6,
+                'active' => true,
+            ],
+            'Alcohólicas' => [
+                'description' => 'Bebidas alcohólicas',
+                'image_url' => 'https://eajapccjngzsjajrmowy.supabase.co/storage/v1/object/public/catalog/categories/alcoholicas.jpeg',
+                'sort_order' => 7,
+                'active' => true,
+            ],
+            'Tés' => [
+                'description' => 'Tés',
+                'image_url' => 'https://eajapccjngzsjajrmowy.supabase.co/storage/v1/object/public/catalog/categories/tes.jpeg',
+                'sort_order' => 8,
+                'active' => true,
+            ],
+        ];
 
-        // Crear o actualizar los Productos
-        Product::updateOrCreate(
-            ['code' => 'CC600-12'],
+        $categories = [];
+        foreach ($categoriesData as $name => $data) {
+            $categories[$name] = Category::updateOrCreate(['name' => $name], $data);
+        }
+
+        //Helper para generar URLs de imágenes de productos
+        $productImage = fn(string $folder, string $filename): string => 
+            'https://eajapccjngzsjajrmowy.supabase.co/storage/v1/object/public/catalog/products/' 
+            . $folder . '/' 
+            . rawurlencode($filename);
+
+        //Definición de Productos (Inactivos y Catálogo Completo)
+        $products = [
+            // Productos de prueba / inactivos
             [
-                'category_id' => $sodas->id,
+                'code' => 'CC600-12',
+                'category_id' => $categories['Sodas']->id,
                 'name' => 'Coca-Cola 600 ml',
                 'description' => 'Bebida gaseosa Coca-Cola',
                 'package_type' => 'FARDO',
@@ -66,14 +91,11 @@ class ProductSeeder extends Seeder
                 'stock' => 120,
                 'minimum_stock' => 20,
                 'image_url' => 'https://eajapccjngzsjajrmowy.supabase.co/storage/v1/object/public/catalog/products/coca-cola-600.png',
-                'active' => true,
-            ]
-        );
-
-        Product::updateOrCreate(
-            ['code' => 'SPR600-12'],
+                'active' => false,
+            ],
             [
-                'category_id' => $sodas->id,
+                'code' => 'SPR600-12',
+                'category_id' => $categories['Sodas']->id,
                 'name' => 'Sprite 600 ml',
                 'description' => 'Bebida gaseosa Sprite',
                 'package_type' => 'FARDO',
@@ -82,14 +104,11 @@ class ProductSeeder extends Seeder
                 'stock' => 80,
                 'minimum_stock' => 20,
                 'image_url' => 'https://eajapccjngzsjajrmowy.supabase.co/storage/v1/object/public/catalog/products/sprite-600.png',
-                'active' => true,
-            ]
-        );
-
-        Product::updateOrCreate(
-            ['code' => 'AGUA600-12'],
+                'active' => false,
+            ],
             [
-                'category_id' => $aguas->id,
+                'code' => 'AGUA600-12',
+                'category_id' => $categories['Aguas']->id,
                 'name' => 'Agua Cristal 600 ml',
                 'description' => 'Agua embotellada',
                 'package_type' => 'FARDO',
@@ -98,14 +117,11 @@ class ProductSeeder extends Seeder
                 'stock' => 100,
                 'minimum_stock' => 20,
                 'image_url' => 'https://eajapccjngzsjajrmowy.supabase.co/storage/v1/object/public/catalog/products/agua-cristal-600.png',
-                'active' => true,
-            ]
-        );
-
-        Product::updateOrCreate(
-            ['code' => 'JUGO330-12'],
+                'active' => false,
+            ],
             [
-                'category_id' => $jugos->id,
+                'code' => 'JUGO330-12',
+                'category_id' => $categories['Jugos']->id,
                 'name' => 'Jugo de Naranja 330 ml',
                 'description' => 'Jugo sabor naranja',
                 'package_type' => 'CAJA',
@@ -114,14 +130,11 @@ class ProductSeeder extends Seeder
                 'stock' => 60,
                 'minimum_stock' => 20,
                 'image_url' => 'https://eajapccjngzsjajrmowy.supabase.co/storage/v1/object/public/catalog/products/jugo-naranja-330.png',
-                'active' => true,
-            ]
-        );
-
-        Product::updateOrCreate(
-            ['code' => 'ENER250-12'],
+                'active' => false,
+            ],
             [
-                'category_id' => $energeticas->id,
+                'code' => 'ENER250-12',
+                'category_id' => $categories['Bebidas energizantes']->id,
                 'name' => 'Energética 250 ml',
                 'description' => 'Bebida energética',
                 'package_type' => 'CAJA',
@@ -130,14 +143,11 @@ class ProductSeeder extends Seeder
                 'stock' => 40,
                 'minimum_stock' => 20,
                 'image_url' => 'https://eajapccjngzsjajrmowy.supabase.co/storage/v1/object/public/catalog/products/energetica-250.png',
-                'active' => true,
-            ]
-        );
-
-        Product::updateOrCreate(
-            ['code' => 'TEST-INACTIVE'],
+                'active' => false,
+            ],
             [
-                'category_id' => $sodas->id,
+                'code' => 'TEST-INACTIVE',
+                'category_id' => $categories['Sodas']->id,
                 'name' => 'Producto Inactivo 500 ml',
                 'description' => 'Producto utilizado para pruebas',
                 'package_type' => 'FARDO',
@@ -147,7 +157,578 @@ class ProductSeeder extends Seeder
                 'minimum_stock' => 20,
                 'image_url' => null,
                 'active' => false,
-            ]
-        );
+            ],
+
+            //--- PRODUCTOS REALES ---
+            // --- SODAS ---
+            [
+                'code' => 'COCA1250-6',
+                'category_id' => $categories['Sodas']->id,
+                'name' => 'Coca-Cola 1.25 L',
+                'description' => 'Bebida gaseosa Coca-Cola',
+                'package_type' => 'FARDO',
+                'units_per_package' => 6,
+                'sale_price' => 8.50,
+                'stock' => 80,
+                'minimum_stock' => 20,
+                'image_url' => $productImage('sodas', 'Coca Cola 1.25L.jpg'),
+                'active' => true,
+            ],
+            [
+                'code' => 'COCA3000-6',
+                'category_id' => $categories['Sodas']->id,
+                'name' => 'Coca-Cola 3 L',
+                'description' => 'Bebida gaseosa Coca-Cola',
+                'package_type' => 'FARDO',
+                'units_per_package' => 6,
+                'sale_price' => 14.50,
+                'stock' => 60,
+                'minimum_stock' => 20,
+                'image_url' => $productImage('sodas', 'Coca Cola 3L.webp'),
+                'active' => true,
+            ],
+            [
+                'code' => 'KOLA2000-6',
+                'category_id' => $categories['Sodas']->id,
+                'name' => 'Kolashanpan 2 L',
+                'description' => 'Bebida gaseosa sabor kola',
+                'package_type' => 'FARDO',
+                'units_per_package' => 6,
+                'sale_price' => 8.00,
+                'stock' => 70,
+                'minimum_stock' => 20,
+                'image_url' => $productImage('sodas', 'Kolashanpan 2L.jpg'),
+                'active' => true,
+            ],
+            [
+                'code' => 'PEPSI1500-6',
+                'category_id' => $categories['Sodas']->id,
+                'name' => 'Pepsi 1.5 L',
+                'description' => 'Bebida gaseosa Pepsi',
+                'package_type' => 'FARDO',
+                'units_per_package' => 6,
+                'sale_price' => 8.75,
+                'stock' => 80,
+                'minimum_stock' => 20,
+                'image_url' => $productImage('sodas', 'Pepsi 1.5L.jpg'),
+                'active' => true,
+            ],
+            [
+                'code' => 'PEPSI3000-6',
+                'category_id' => $categories['Sodas']->id,
+                'name' => 'Pepsi 3 L',
+                'description' => 'Bebida gaseosa Pepsi',
+                'package_type' => 'FARDO',
+                'units_per_package' => 6,
+                'sale_price' => 13.75,
+                'stock' => 60,
+                'minimum_stock' => 20,
+                'image_url' => $productImage('sodas', 'Pepsi 3L.webp'),
+                'active' => true,
+            ],
+            [
+                'code' => 'SALVA2000-6',
+                'category_id' => $categories['Sodas']->id,
+                'name' => 'Salva Cola 2 L',
+                'description' => 'Bebida gaseosa Salva Cola',
+                'package_type' => 'FARDO',
+                'units_per_package' => 6,
+                'sale_price' => 7.50,
+                'stock' => 70,
+                'minimum_stock' => 20,
+                'image_url' => $productImage('sodas', 'Salva Cola 2L.jpg'),
+                'active' => true,
+            ],
+
+            // --- AGUAS ---
+            [
+                'code' => 'ALPINA1000-12',
+                'category_id' => $categories['Aguas']->id,
+                'name' => 'Agua Alpina 1 L',
+                'description' => 'Agua embotellada Alpina',
+                'package_type' => 'FARDO',
+                'units_per_package' => 12,
+                'sale_price' => 7.50,
+                'stock' => 100,
+                'minimum_stock' => 20,
+                'image_url' => $productImage('aguas', 'Agua Alpina 1L.jpg'),
+                'active' => true,
+            ],
+            [
+                'code' => 'CRISTAL1000-12',
+                'category_id' => $categories['Aguas']->id,
+                'name' => 'Agua Cristal 1 L',
+                'description' => 'Agua embotellada Cristal',
+                'package_type' => 'FARDO',
+                'units_per_package' => 12,
+                'sale_price' => 7.75,
+                'stock' => 120,
+                'minimum_stock' => 20,
+                'image_url' => $productImage('aguas', 'Agua Cristal 1L.webp'),
+                'active' => true,
+            ],
+            [
+                'code' => 'CASCADA700-12',
+                'category_id' => $categories['Aguas']->id,
+                'name' => 'Agua La Cascada 700 ml',
+                'description' => 'Agua embotellada La Cascada',
+                'package_type' => 'FARDO',
+                'units_per_package' => 12,
+                'sale_price' => 6.50,
+                'stock' => 90,
+                'minimum_stock' => 20,
+                'image_url' => $productImage('aguas', 'Agua La Cascada 700ml.jpg'),
+                'active' => true,
+            ],
+            [
+                'code' => 'PERLITAS1300-12',
+                'category_id' => $categories['Aguas']->id,
+                'name' => 'Agua Las Perlitas 1.3 L',
+                'description' => 'Agua embotellada Las Perlitas',
+                'package_type' => 'FARDO',
+                'units_per_package' => 12,
+                'sale_price' => 8.00,
+                'stock' => 80,
+                'minimum_stock' => 20,
+                'image_url' => $productImage('aguas', 'Agua Las Perlitas 1.3L.jpg'),
+                'active' => true,
+            ],
+
+            // --- JUGOS ---
+            [
+                'code' => 'GRANJA1000-12',
+                'category_id' => $categories['Jugos']->id,
+                'name' => 'De La Granja 1 L',
+                'description' => 'Jugo De La Granja',
+                'package_type' => 'CAJA',
+                'units_per_package' => 12,
+                'sale_price' => 13.50,
+                'stock' => 60,
+                'minimum_stock' => 20,
+                'image_url' => $productImage('jugos', 'De La Granja 1L.webp'),
+                'active' => true,
+            ],
+            [
+                'code' => 'GRANJA500-12',
+                'category_id' => $categories['Jugos']->id,
+                'name' => 'De La Granja 500 ml',
+                'description' => 'Jugo De La Granja',
+                'package_type' => 'CAJA',
+                'units_per_package' => 12,
+                'sale_price' => 8.50,
+                'stock' => 70,
+                'minimum_stock' => 20,
+                'image_url' => $productImage('jugos', 'De La Granja 500ml.jpg'),
+                'active' => true,
+            ],
+            [
+                'code' => 'VALLECIT2500-6',
+                'category_id' => $categories['Jugos']->id,
+                'name' => 'Del Valle Citrus 2.5 L',
+                'description' => 'Jugo Del Valle Citrus',
+                'package_type' => 'CAJA',
+                'units_per_package' => 6,
+                'sale_price' => 15.00,
+                'stock' => 50,
+                'minimum_stock' => 20,
+                'image_url' => $productImage('jugos', 'Del Valle Citrus 2.5L.jpg'),
+                'active' => true,
+            ],
+            [
+                'code' => 'VALLEMAN500-12',
+                'category_id' => $categories['Jugos']->id,
+                'name' => 'Del Valle Mandarina 500 ml',
+                'description' => 'Jugo Del Valle sabor mandarina',
+                'package_type' => 'CAJA',
+                'units_per_package' => 12,
+                'sale_price' => 9.00,
+                'stock' => 70,
+                'minimum_stock' => 20,
+                'image_url' => $productImage('jugos', 'Del Valle Mandarina 500ml.webp'),
+                'active' => true,
+            ],
+            [
+                'code' => 'FRUTMAN600-12',
+                'category_id' => $categories['Jugos']->id,
+                'name' => 'Frutado Manzana 600 ml',
+                'description' => 'Bebida Frutado sabor manzana',
+                'package_type' => 'CAJA',
+                'units_per_package' => 12,
+                'sale_price' => 9.25,
+                'stock' => 60,
+                'minimum_stock' => 20,
+                'image_url' => $productImage('jugos', 'Frutado Manzana 600ml.webp'),
+                'active' => true,
+            ],
+            [
+                'code' => 'FRUTPER600-12',
+                'category_id' => $categories['Jugos']->id,
+                'name' => 'Frutado Pera 600 ml',
+                'description' => 'Bebida Frutado sabor pera',
+                'package_type' => 'CAJA',
+                'units_per_package' => 12,
+                'sale_price' => 9.25,
+                'stock' => 60,
+                'minimum_stock' => 20,
+                'image_url' => $productImage('jugos', 'Frutado Pera 600ml.webp'),
+                'active' => true,
+            ],
+
+            // --- BEBIDAS ENERGIZANTES ---
+            [
+                'code' => 'ADREN473-12',
+                'category_id' => $categories['Bebidas energizantes']->id,
+                'name' => 'Adrenaline 473 ml',
+                'description' => 'Bebida energizante Adrenaline',
+                'package_type' => 'CAJA',
+                'units_per_package' => 12,
+                'sale_price' => 18.00,
+                'stock' => 50,
+                'minimum_stock' => 20,
+                'image_url' => $productImage('energizantes', 'Adrenaline 473ml.webp'),
+                'active' => true,
+            ],
+            [
+                'code' => 'AMP600-12',
+                'category_id' => $categories['Bebidas energizantes']->id,
+                'name' => 'AMP 600 ml',
+                'description' => 'Bebida energizante AMP',
+                'package_type' => 'FARDO',
+                'units_per_package' => 12,
+                'sale_price' => 16.00,
+                'stock' => 60,
+                'minimum_stock' => 20,
+                'image_url' => $productImage('energizantes', 'AMP 600ml.jpg'),
+                'active' => true,
+            ],
+            [
+                'code' => 'FURY500-12',
+                'category_id' => $categories['Bebidas energizantes']->id,
+                'name' => 'Fury 500 ml',
+                'description' => 'Bebida energizante Fury',
+                'package_type' => 'FARDO',
+                'units_per_package' => 12,
+                'sale_price' => 14.50,
+                'stock' => 60,
+                'minimum_stock' => 20,
+                'image_url' => $productImage('energizantes', 'Fury 500ml.jpg'),
+                'active' => true,
+            ],
+            [
+                'code' => 'HIENERGY500-12',
+                'category_id' => $categories['Bebidas energizantes']->id,
+                'name' => 'HiEnergy 500 ml',
+                'description' => 'Bebida energizante HiEnergy',
+                'package_type' => 'FARDO',
+                'units_per_package' => 12,
+                'sale_price' => 14.00,
+                'stock' => 60,
+                'minimum_stock' => 20,
+                'image_url' => $productImage('energizantes', 'HiEnergy 500ml.jpg'),
+                'active' => true,
+            ],
+            [
+                'code' => 'MONSTER473-12',
+                'category_id' => $categories['Bebidas energizantes']->id,
+                'name' => 'Monster 473 ml',
+                'description' => 'Bebida energizante Monster',
+                'package_type' => 'CAJA',
+                'units_per_package' => 12,
+                'sale_price' => 28.00,
+                'stock' => 40,
+                'minimum_stock' => 20,
+                'image_url' => $productImage('energizantes', 'Monster Lata 473ml.webp'),
+                'active' => true,
+            ],
+            [
+                'code' => 'REDBULL250-24',
+                'category_id' => $categories['Bebidas energizantes']->id,
+                'name' => 'Red Bull 250 ml',
+                'description' => 'Bebida energizante Red Bull',
+                'package_type' => 'CAJA',
+                'units_per_package' => 24,
+                'sale_price' => 48.00,
+                'stock' => 40,
+                'minimum_stock' => 20,
+                'image_url' => $productImage('energizantes', 'Red Bull 250ml.jpg'),
+                'active' => true,
+            ],
+
+            // --- ISOTÓNICAS ---
+            [
+                'code' => 'GATAPON750-12',
+                'category_id' => $categories['Isotónicas']->id,
+                'name' => 'Gatorade Ponche 750 ml',
+                'description' => 'Bebida isotónica Gatorade sabor ponche',
+                'package_type' => 'FARDO',
+                'units_per_package' => 12,
+                'sale_price' => 16.00,
+                'stock' => 60,
+                'minimum_stock' => 20,
+                'image_url' => $productImage('isotonicas', 'Gatorade Ponche 750ml.png'),
+                'active' => true,
+            ],
+            [
+                'code' => 'GATAUVA750-12',
+                'category_id' => $categories['Isotónicas']->id,
+                'name' => 'Gatorade Uva 750 ml',
+                'description' => 'Bebida isotónica Gatorade sabor uva',
+                'package_type' => 'FARDO',
+                'units_per_package' => 12,
+                'sale_price' => 16.00,
+                'stock' => 60,
+                'minimum_stock' => 20,
+                'image_url' => $productImage('isotonicas', 'Gatorade Uva 750ml.png'),
+                'active' => true,
+            ],
+            [
+                'code' => 'POWERAZUL750-12',
+                'category_id' => $categories['Isotónicas']->id,
+                'name' => 'Power Avalancha Azul 750 ml',
+                'description' => 'Bebida isotónica sabor avalancha azul',
+                'package_type' => 'FARDO',
+                'units_per_package' => 12,
+                'sale_price' => 15.50,
+                'stock' => 50,
+                'minimum_stock' => 20,
+                'image_url' => $productImage('isotonicas', 'Power Avalancha Azul 750ml.jpg'),
+                'active' => true,
+            ],
+            [
+                'code' => 'POWERPON750-12',
+                'category_id' => $categories['Isotónicas']->id,
+                'name' => 'Powerade Ponche 750 ml',
+                'description' => 'Bebida isotónica Powerade sabor ponche',
+                'package_type' => 'FARDO',
+                'units_per_package' => 12,
+                'sale_price' => 15.50,
+                'stock' => 50,
+                'minimum_stock' => 20,
+                'image_url' => $productImage('isotonicas', 'Powerade Poche 750ml.jpg'),
+                'active' => true,
+            ],
+
+            // --- MINERALES ---
+            [
+                'code' => 'SALTLIM355-24',
+                'category_id' => $categories['Minerales']->id,
+                'name' => 'Salutaris Limonada 355 ml',
+                'description' => 'Bebida mineral Salutaris sabor limonada',
+                'package_type' => 'CAJA',
+                'units_per_package' => 24,
+                'sale_price' => 18.00,
+                'stock' => 50,
+                'minimum_stock' => 20,
+                'image_url' => $productImage('minerales', 'Salutaris Limonada Lata 355ml.jpg'),
+                'active' => true,
+            ],
+            [
+                'code' => 'SALTMIN2000-6',
+                'category_id' => $categories['Minerales']->id,
+                'name' => 'Salutaris Mineral 2 L',
+                'description' => 'Agua mineral Salutaris',
+                'package_type' => 'FARDO',
+                'units_per_package' => 6,
+                'sale_price' => 10.00,
+                'stock' => 60,
+                'minimum_stock' => 20,
+                'image_url' => $productImage('minerales', 'Salutaris Mineral 2L.png'),
+                'active' => true,
+            ],
+            [
+                'code' => 'SALTMIN355-24',
+                'category_id' => $categories['Minerales']->id,
+                'name' => 'Salutaris Mineral 355 ml',
+                'description' => 'Agua mineral Salutaris en lata',
+                'package_type' => 'CAJA',
+                'units_per_package' => 24,
+                'sale_price' => 18.00,
+                'stock' => 50,
+                'minimum_stock' => 20,
+                'image_url' => $productImage('minerales', 'Salutaris Mineral Lata 355ml.jpg'),
+                'active' => true,
+            ],
+            [
+                'code' => 'SALTNAR355-24',
+                'category_id' => $categories['Minerales']->id,
+                'name' => 'Salutaris Naranja 355 ml',
+                'description' => 'Bebida mineral Salutaris sabor naranja',
+                'package_type' => 'CAJA',
+                'units_per_package' => 24,
+                'sale_price' => 18.00,
+                'stock' => 50,
+                'minimum_stock' => 20,
+                'image_url' => $productImage('minerales', 'Salutaris Naranja Lata 355ml.png'),
+                'active' => true,
+            ],
+            [
+                'code' => 'SALTTOR2000-6',
+                'category_id' => $categories['Minerales']->id,
+                'name' => 'Salutaris Toronja 2 L',
+                'description' => 'Bebida mineral Salutaris sabor toronja',
+                'package_type' => 'FARDO',
+                'units_per_package' => 6,
+                'sale_price' => 10.50,
+                'stock' => 60,
+                'minimum_stock' => 20,
+                'image_url' => $productImage('minerales', 'Salutaris Toronja 2L.png'),
+                'active' => true,
+            ],
+            [
+                'code' => 'SALTTOR355-24',
+                'category_id' => $categories['Minerales']->id,
+                'name' => 'Salutaris Toronja 355 ml',
+                'description' => 'Bebida mineral Salutaris sabor toronja',
+                'package_type' => 'CAJA',
+                'units_per_package' => 24,
+                'sale_price' => 18.00,
+                'stock' => 50,
+                'minimum_stock' => 20,
+                'image_url' => $productImage('minerales', 'Salutaris Toronja Lata 355ml.jpg'),
+                'active' => true,
+            ],
+
+            // --- ALCOHÓLICAS ---
+            [
+                'code' => 'CORONA330-24',
+                'category_id' => $categories['Alcohólicas']->id,
+                'name' => 'Corona Vidrio 330 ml',
+                'description' => 'Cerveza Corona en botella de vidrio',
+                'package_type' => 'CAJA',
+                'units_per_package' => 24,
+                'sale_price' => 32.00,
+                'stock' => 50,
+                'minimum_stock' => 20,
+                'image_url' => $productImage('alcoholicas', 'Corona Vidrio 330ml.webp'),
+                'active' => true,
+            ],
+            [
+                'code' => 'CUBMOJ350-12',
+                'category_id' => $categories['Alcohólicas']->id,
+                'name' => 'Cubata Mojito 350 ml',
+                'description' => 'Bebida alcohólica Cubata Mojito',
+                'package_type' => 'CAJA',
+                'units_per_package' => 12,
+                'sale_price' => 20.00,
+                'stock' => 40,
+                'minimum_stock' => 20,
+                'image_url' => $productImage('alcoholicas', 'Cubata Mojito Lata 350ml.webp'),
+                'active' => true,
+            ],
+            [
+                'code' => 'GOLDEN330-24',
+                'category_id' => $categories['Alcohólicas']->id,
+                'name' => 'Golden Vidrio 330 ml',
+                'description' => 'Cerveza Golden en botella de vidrio',
+                'package_type' => 'CAJA',
+                'units_per_package' => 24,
+                'sale_price' => 25.00,
+                'stock' => 60,
+                'minimum_stock' => 20,
+                'image_url' => $productImage('alcoholicas', 'Golden Vidrio 330ml.jpg'),
+                'active' => true,
+            ],
+            [
+                'code' => 'PILSENER330-24',
+                'category_id' => $categories['Alcohólicas']->id,
+                'name' => 'Pilsener Vidrio 330 ml',
+                'description' => 'Cerveza Pilsener en botella de vidrio',
+                'package_type' => 'CAJA',
+                'units_per_package' => 24,
+                'sale_price' => 25.00,
+                'stock' => 60,
+                'minimum_stock' => 20,
+                'image_url' => $productImage('alcoholicas', 'Pilsener Vidrio 330ml.jpg'),
+                'active' => true,
+            ],
+
+            // --- TÉS ---
+            [
+                'code' => 'LIPDUR2500-6',
+                'category_id' => $categories['Tés']->id,
+                'name' => 'Lipton Durazno 2.5 L',
+                'description' => 'Té frío Lipton sabor durazno',
+                'package_type' => 'FARDO',
+                'units_per_package' => 6,
+                'sale_price' => 14.00,
+                'stock' => 50,
+                'minimum_stock' => 20,
+                'image_url' => $productImage('tes', 'Lipton Durazno 2.5L.jpg'),
+                'active' => true,
+            ],
+            [
+                'code' => 'LIPDUR500-12',
+                'category_id' => $categories['Tés']->id,
+                'name' => 'Lipton Durazno 500 ml',
+                'description' => 'Té frío Lipton sabor durazno',
+                'package_type' => 'FARDO',
+                'units_per_package' => 12,
+                'sale_price' => 9.00,
+                'stock' => 70,
+                'minimum_stock' => 20,
+                'image_url' => $productImage('tes', 'Lipton Durazno 500ml.webp'),
+                'active' => true,
+            ],
+            [
+                'code' => 'LIPFRA2500-6',
+                'category_id' => $categories['Tés']->id,
+                'name' => 'Lipton Frambuesa 2.5 L',
+                'description' => 'Té frío Lipton sabor frambuesa',
+                'package_type' => 'FARDO',
+                'units_per_package' => 6,
+                'sale_price' => 14.00,
+                'stock' => 50,
+                'minimum_stock' => 20,
+                'image_url' => $productImage('tes', 'Lipton Frambuesa 2.5L.jpg'),
+                'active' => true,
+            ],
+            [
+                'code' => 'LIPFRA500-12',
+                'category_id' => $categories['Tés']->id,
+                'name' => 'Lipton Frambuesa 500 ml',
+                'description' => 'Té frío Lipton sabor frambuesa',
+                'package_type' => 'FARDO',
+                'units_per_package' => 12,
+                'sale_price' => 9.00,
+                'stock' => 70,
+                'minimum_stock' => 20,
+                'image_url' => $productImage('tes', 'Lipton Frambuesa 500ml.webp'),
+                'active' => true,
+            ],
+            [
+                'code' => 'LIPLIM2500-6',
+                'category_id' => $categories['Tés']->id,
+                'name' => 'Lipton Limón 2.5 L',
+                'description' => 'Té frío Lipton sabor limón',
+                'package_type' => 'FARDO',
+                'units_per_package' => 6,
+                'sale_price' => 14.00,
+                'stock' => 50,
+                'minimum_stock' => 20,
+                'image_url' => $productImage('tes', 'Lipton Limon 2.5L.jpg'),
+                'active' => true,
+            ],
+            [
+                'code' => 'LIPLIM500-12',
+                'category_id' => $categories['Tés']->id,
+                'name' => 'Lipton Limón 500 ml',
+                'description' => 'Té frío Lipton sabor limón',
+                'package_type' => 'FARDO',
+                'units_per_package' => 12,
+                'sale_price' => 9.00,
+                'stock' => 70,
+                'minimum_stock' => 20,
+                'image_url' => $productImage('tes', 'Lipton Limon 500ml.webp'),
+                'active' => true,
+            ],
+        ];
+
+        //Insert de datos de productos, actualizando si ya existen
+        foreach ($products as $productData) {
+            Product::updateOrCreate(
+                ['code' => $productData['code']],
+                $productData
+            );
+        }
     }
 }
