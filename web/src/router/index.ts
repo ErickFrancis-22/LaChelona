@@ -72,6 +72,10 @@ const routes = [
       },
     ],
   },
+  {
+    path: '/:pathMatch(.*)*',
+    redirect: '/admin',
+  },
 ]
 
 const router = createRouter({
