@@ -95,13 +95,14 @@
   color: rgba(30, 47, 85, 0.35);
   font-size: 32px;
 
-  // Fuera del flujo del grid: la imagen nunca crece más que el recuadro ni tapa el nombre
+  // Fuera del flujo del grid: la imagen nunca crece más que el recuadro ni tapa el nombre.
+  // `contain` muestra la imagen completa en lugar de recortarla
   img {
     position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+    inset: 6px;
+    width: calc(100% - 12px);
+    height: calc(100% - 12px);
+    object-fit: contain;
   }
 }
 

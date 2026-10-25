@@ -17,6 +17,43 @@ export interface LoginResponse {
   };
 }
 
+// El backend pide el nombre dos veces: `name` (usuario) y `contact_name` (encargado del negocio)
+export interface RegisterRequest {
+  name: string;
+  username: string;
+  email: string;
+  password: string;
+  business_name: string;
+  contact_name: string;
+  phone: string;
+  address: string;
+  address_reference: string | null;
+  latitude: number;
+  longitude: number;
+}
+
+// El registro no devuelve token: el cliente inicia sesión después desde el login
+export interface RegisterResponse {
+  message: string;
+  user: {
+    id: number;
+    name: string;
+    username: string;
+    email: string;
+    role: 'CLIENT';
+  };
+  client: {
+    id: number;
+    business_name: string;
+    contact_name: string;
+    phone: string;
+    address: string;
+    address_reference: string | null;
+    latitude: string; // cast decimal:7 de Laravel
+    longitude: string;
+  };
+}
+
 const TOKEN_KEY = 'auth_token';
 const USER_NAME_KEY = 'auth_user_name';
 
@@ -33,6 +70,10 @@ export class AuthService {
           localStorage.setItem(USER_NAME_KEY, res.user.name);
         }),
       );
+  }
+
+  register(data: RegisterRequest): Observable<RegisterResponse> {
+    return this.api.post<RegisterResponse>('auth/register', data);
   }
 
   saveToken(token: string): void {
