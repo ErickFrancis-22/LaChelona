@@ -7,9 +7,9 @@
 
     <form [formGroup]="form" (ngSubmit)="onSubmit()">
       <div class="field">
-        <label class="field-label" for="username">Usuario</label>
+        <span class="field-label">Usuario</span>
         <ion-input
-          id="username"
+          aria-label="Usuario"
           class="field-input"
           formControlName="username"
           placeholder="Ej. minisuper.elroble"
@@ -22,9 +22,9 @@
       </div>
 
       <div class="field">
-        <label class="field-label" for="password">Contraseña</label>
+        <span class="field-label">Contraseña</span>
         <ion-input
-          id="password"
+          aria-label="Contraseña"
           class="field-input"
           formControlName="password"
           type="password"
@@ -49,5 +49,5 @@
 
 <ion-footer class="login-footer ion-no-border">
   <p class="footer-text">¿Tu negocio aún no tiene cuenta?</p>
-  <ion-button class="btn-register" expand="block" color="secondary">Registrar mi negocio</ion-button>
+  <ion-button class="btn-register" expand="block" color="secondary" routerLink="/register">Registrar mi negocio</ion-button>
 </ion-footer>

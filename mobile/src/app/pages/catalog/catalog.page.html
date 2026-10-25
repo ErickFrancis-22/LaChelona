@@ -88,7 +88,12 @@
                 [routerLink]="['/tabs/catalog', category.id]"
                 [state]="{ categoryName: category.name }"
               >
-                <div class="category-media" [style.background]="pastelColor(i)">
+                <div
+                  class="category-media"
+                  [style.background]="
+                    category.image_url && !failedImages().has(category.id) ? '#ffffff' : pastelColor(i)
+                  "
+                >
                   @if (category.image_url && !failedImages().has(category.id)) {
                     <img
                       [src]="category.image_url"

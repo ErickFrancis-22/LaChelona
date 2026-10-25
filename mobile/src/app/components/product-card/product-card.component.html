@@ -1,6 +1,6 @@
 <article class="product" [class.product--unavailable]="!product().available">
   <div class="product-media" [style.background]="mediaColor()">
-    @if (product().image_url && !imageFailed()) {
+    @if (showImage()) {
       <img [src]="product().image_url" [alt]="product().name" loading="lazy" (error)="imageFailed.set(true)" />
     } @else {
       <ion-icon name="image-outline"></ion-icon>

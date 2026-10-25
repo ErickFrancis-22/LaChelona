@@ -28,7 +28,10 @@ export class ProductCardComponent {
     return `${PACKAGE_LABELS[product.package_type]} ${product.units_per_package} u.`;
   });
 
-  readonly mediaColor = computed(() => pastelColor(this.product().id));
+  readonly showImage = computed(() => !!this.product().image_url && !this.imageFailed());
+
+  // Las imágenes vienen con fondo blanco; el pastel queda solo para el ícono de respaldo
+  readonly mediaColor = computed(() => (this.showImage() ? '#ffffff' : pastelColor(this.product().id)));
 
   constructor() {
     addIcons({ add, imageOutline });
