@@ -13,6 +13,7 @@ class ProductSeeder extends Seeder
         //Renames de categorías antiguas si existen
         Category::where('name', 'Jugos y tés')->update(['name' => 'Jugos']);
         Category::where('name', 'Energéticas')->update(['name' => 'Bebidas energizantes']);
+        Category::where('name', 'Aguas')->update(['name' => 'Agua']);
 
         //Definición y actualización de Categorías
         $categoriesData = [
@@ -22,7 +23,7 @@ class ProductSeeder extends Seeder
                 'sort_order' => 1,
                 'active' => true,
             ],
-            'Aguas' => [
+            'Agua' => [
                 'description' => 'Agua embotellada',
                 'image_url' => 'https://eajapccjngzsjajrmowy.supabase.co/storage/v1/object/public/catalog/categories/aguas.jpeg',
                 'sort_order' => 2,
@@ -108,7 +109,7 @@ class ProductSeeder extends Seeder
             ],
             [
                 'code' => 'AGUA600-12',
-                'category_id' => $categories['Aguas']->id,
+                'category_id' => $categories['Agua']->id,
                 'name' => 'Agua Cristal 600 ml',
                 'description' => 'Agua embotellada',
                 'package_type' => 'FARDO',
@@ -240,10 +241,10 @@ class ProductSeeder extends Seeder
                 'active' => true,
             ],
 
-            // --- AGUAS ---
+            // --- AGUA ---
             [
                 'code' => 'ALPINA1000-12',
-                'category_id' => $categories['Aguas']->id,
+                'category_id' => $categories['Agua']->id,
                 'name' => 'Agua Alpina 1 L',
                 'description' => 'Agua embotellada Alpina',
                 'package_type' => 'FARDO',
@@ -256,7 +257,7 @@ class ProductSeeder extends Seeder
             ],
             [
                 'code' => 'CRISTAL1000-12',
-                'category_id' => $categories['Aguas']->id,
+                'category_id' => $categories['Agua']->id,
                 'name' => 'Agua Cristal 1 L',
                 'description' => 'Agua embotellada Cristal',
                 'package_type' => 'FARDO',
@@ -269,7 +270,7 @@ class ProductSeeder extends Seeder
             ],
             [
                 'code' => 'CASCADA700-12',
-                'category_id' => $categories['Aguas']->id,
+                'category_id' => $categories['Agua']->id,
                 'name' => 'Agua La Cascada 700 ml',
                 'description' => 'Agua embotellada La Cascada',
                 'package_type' => 'FARDO',
@@ -282,7 +283,7 @@ class ProductSeeder extends Seeder
             ],
             [
                 'code' => 'PERLITAS1300-12',
-                'category_id' => $categories['Aguas']->id,
+                'category_id' => $categories['Agua']->id,
                 'name' => 'Agua Las Perlitas 1.3 L',
                 'description' => 'Agua embotellada Las Perlitas',
                 'package_type' => 'FARDO',
@@ -331,7 +332,7 @@ class ProductSeeder extends Seeder
                 'sale_price' => 15.00,
                 'stock' => 50,
                 'minimum_stock' => 20,
-                'image_url' => $productImage('jugos', 'Del Valle Citrus 2.5L.jpg'),
+                'image_url' => $productImage('jugos', 'Del Valle Citrus 2.5L.jpeg'),
                 'active' => true,
             ],
             [
@@ -344,7 +345,7 @@ class ProductSeeder extends Seeder
                 'sale_price' => 9.00,
                 'stock' => 70,
                 'minimum_stock' => 20,
-                'image_url' => $productImage('jugos', 'Del Valle Mandarina 500ml.webp'),
+                'image_url' => $productImage('jugos', 'Del Valle Mandarina 500ml.jpeg'),
                 'active' => true,
             ],
             [
