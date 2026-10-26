@@ -1,5 +1,5 @@
 <ion-tabs>
-  <ion-tab-bar slot="bottom">
+  <ion-tab-bar slot="bottom" [class.tab-bar--hidden]="tabBar.hidden()">
     <ion-tab-button tab="catalog">
       <ion-icon name="home-outline"></ion-icon>
       <ion-label>Inicio</ion-label>

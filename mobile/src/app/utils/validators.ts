@@ -16,3 +16,14 @@ export function matchControl(otherName: string): ValidatorFn {
     return control.value === other.value ? null : { mismatch: true };
   };
 }
+
+// Lo contrario de matchControl: el valor debe ser distinto (ej. la nueva contraseña frente a la actual)
+export function differentFrom(otherName: string): ValidatorFn {
+  return (control: AbstractControl): ValidationErrors | null => {
+    const other = control.parent?.get(otherName);
+    if (!other || !control.value) {
+      return null;
+    }
+    return control.value === other.value ? { sameAsOther: true } : null;
+  };
+}

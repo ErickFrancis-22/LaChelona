@@ -35,3 +35,60 @@
 /* @import "@ionic/angular/css/palettes/dark.always.css"; */
 /* @import "@ionic/angular/css/palettes/dark.class.css"; */
 @import '@ionic/angular/css/palettes/dark.system.css';
+
+// Pin de los mapas Leaflet (utils/map-pin.ts): Leaflet lo crea fuera de las vistas de Angular
+.location-pin {
+  background: none;
+  border: 0;
+}
+
+.location-pin__head {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 28px;
+  height: 28px;
+  border: 3px solid #1e2f55;
+  border-radius: 50% 50% 50% 0;
+  background: #ffc107;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  transform: rotate(-45deg);
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #1e2f55;
+    transform: translate(-50%, -50%);
+  }
+}
+
+// Aviso de éxito: tarjeta blanca con solo el ícono en verde. Los toasts se crean fuera de las páginas, por eso viven aquí
+ion-toast.toast-success {
+  --background: #ffffff;
+  --color: #1b1f2a;
+  --border-radius: 14px;
+  --box-shadow: 0 6px 20px rgba(30, 47, 85, 0.18);
+  --start: 16px;
+  --end: 16px;
+  --max-width: 420px;
+
+  &::part(container) {
+    padding: 4px 6px;
+    border-radius: 14px;
+  }
+
+  &::part(icon) {
+    color: #1f7a3d;
+    font-size: 24px;
+  }
+
+  &::part(message) {
+    font-size: 15px;
+    font-weight: 600;
+  }
+}
