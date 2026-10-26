@@ -1,42 +1,447 @@
-.hero {
-  padding: calc(28px + var(--ion-safe-area-top, 0px)) 20px 20px;
-  border-radius: 0 0 24px 24px;
-  background: #1e2f55;
-  color: #ffffff;
+// Igual que el login y el registro: diseño siempre claro, independiente del modo oscuro del sistema.
+// .sheet repite las variables porque Ionic puede presentar el modal fuera de la página
+:host,
+.sheet {
+  --navy: #1e2f55;
+  --yellow: #ffc107;
+  --text: #1b1f2a;
+  --muted: #5f6675;
+  --input-bg: #f3f4f8;
+  --input-border: #dfe2ea;
+  --divider: #e6e8ee;
+  --danger: #b3261e;
 }
 
-.hero-title {
-  margin: 0;
-  font-size: 26px;
-  font-weight: 800;
-}
-
-.placeholder-content {
+.profile-content {
   --background: #f3f4f8;
 }
 
-.placeholder {
+// ---- Encabezado ----
+
+.hero {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 64px 32px;
+  padding: calc(40px + var(--ion-safe-area-top, 0px)) 20px 30px;
+  border-radius: 0 0 28px 28px;
+  background: var(--navy);
+  color: #ffffff;
   text-align: center;
+}
+
+.hero-edit {
+  position: absolute;
+  top: calc(16px + var(--ion-safe-area-top, 0px));
+  right: 16px;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.avatar {
+  display: grid;
+  place-items: center;
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  background: var(--yellow);
+  color: var(--navy);
+  font-size: 26px;
+  font-weight: 800;
 
   ion-icon {
-    font-size: 48px;
-    color: rgba(30, 47, 85, 0.35);
+    font-size: 34px;
   }
 }
 
-.placeholder-title {
-  margin: 16px 0 6px;
-  font-size: 18px;
+.hero-name {
+  margin: 14px 0 0;
+  font-size: 24px;
   font-weight: 800;
-  color: #1b1f2a;
+  line-height: 1.25;
 }
 
-.placeholder-message {
-  margin: 0;
+.hero-user {
+  margin: 8px 0 0;
   font-size: 14px;
-  color: #5f6675;
+  color: rgba(255, 255, 255, 0.75);
+
+  strong {
+    color: #ffffff;
+    font-weight: 700;
+  }
+}
+
+.hero-skeleton {
+  --background: rgba(255, 255, 255, 0.15);
+  --background-rgb: 255, 255, 255;
+  border-radius: 6px;
+
+  &--name {
+    width: 60%;
+    height: 24px;
+    margin-top: 16px;
+  }
+
+  &--user {
+    width: 40%;
+    height: 14px;
+    margin-top: 10px;
+  }
+}
+
+// ---- Tarjetas ----
+
+.cards {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 16px 16px 24px;
+}
+
+.card {
+  padding: 16px;
+  border-radius: 16px;
+  background: #ffffff;
+  color: var(--text);
+
+  &--actions {
+    padding: 4px 16px;
+  }
+}
+
+.card-title {
+  margin: 0;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--divider);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.skeleton-line {
+  height: 16px;
+  margin: 14px 0 0;
+  border-radius: 6px;
+
+  &--title {
+    width: 45%;
+    height: 13px;
+    margin-top: 0;
+  }
+}
+
+.info-list {
+  margin: 0;
+}
+
+.info-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 0;
+
+  & + & {
+    border-top: 1px solid var(--divider);
+  }
+
+  &:last-child {
+    padding-bottom: 4px;
+  }
+
+  dt {
+    flex-shrink: 0;
+    font-size: 15px;
+    color: var(--muted);
+  }
+
+  dd {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 700;
+    text-align: right;
+    overflow-wrap: anywhere;
+  }
+}
+
+.address {
+  margin: 10px 0 0;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.reference {
+  margin: 8px 0 0;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.map-box {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 160px;
+  margin-top: 14px;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--divider);
+  border-radius: 12px;
+  background: #fff8e1;
+
+  &--editable {
+    margin-top: 0;
+    border: 1px dashed #f0c64a;
+    text-align: left;
+  }
+}
+
+.map-empty {
+  display: grid;
+  place-items: center;
+  height: 100%;
+  font-size: 14px;
+  color: #8a6400;
+}
+
+.map-badge {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  z-index: 1000; // Leaflet usa z-index hasta 1000 para sus capas
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: var(--navy);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  box-shadow: 0 2px 6px rgba(30, 47, 85, 0.25);
+}
+
+// ---- Acciones ----
+
+.action {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  min-height: 56px;
+  padding: 10px 0;
+  border: 0;
+  background: none;
+  color: var(--text);
+  font-size: 16px;
+  font-weight: 700;
+  text-align: left;
+
+  & + & {
+    border-top: 1px solid var(--divider);
+  }
+
+  &--danger {
+    color: var(--danger);
+
+    .action-icon {
+      background: #fbe4e0;
+      color: var(--danger);
+    }
+  }
+}
+
+.action-icon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: #e8ecf5;
+  color: var(--navy);
+  font-size: 19px;
+}
+
+.action-label {
+  flex: 1;
+}
+
+.action-chevron {
+  color: var(--muted);
+  font-size: 18px;
+}
+
+// ---- Campos (edición y contraseña) ----
+
+.field {
+  padding: 12px 0;
+
+  .card & + & {
+    border-top: 1px solid var(--divider);
+  }
+
+  &--last {
+    padding-bottom: 0;
+  }
+}
+
+.field-label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.field-input {
+  --background: var(--input-bg);
+  --color: var(--text);
+  --placeholder-color: #8a909c;
+  --placeholder-opacity: 1;
+  --padding-start: 14px;
+  --padding-end: 8px;
+  --highlight-height: 0;
+  min-height: 48px;
+  border: 1px solid var(--input-border);
+  border-radius: 12px;
+  overflow: hidden;
+  font-size: 16px;
+
+  &.has-focus {
+    border-color: var(--navy);
+  }
+
+  &.ion-touched.ion-invalid {
+    border-color: var(--ion-color-danger, #c5000f);
+  }
+
+  ion-input-password-toggle {
+    --color: var(--muted);
+  }
+}
+
+.field-textarea {
+  --padding-top: 12px;
+  --padding-bottom: 12px;
+}
+
+.field-error {
+  display: block;
+  margin-top: 6px;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--ion-color-danger, #c5000f);
+}
+
+// ---- Barra de edición ----
+
+.edit-footer {
+  display: flex;
+  gap: 12px;
+  padding: 12px 16px calc(12px + var(--ion-safe-area-bottom, 0px));
+  background: #ffffff;
+  border-top: 1px solid var(--divider);
+}
+
+.btn-primary,
+.btn-secondary {
+  --border-radius: 12px;
+  --box-shadow: none;
+  height: 52px;
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.btn-primary {
+  --background: var(--navy);
+  --background-activated: #16233f;
+  --color: #ffffff;
+  flex: 2;
+}
+
+.btn-secondary {
+  --background: #ffffff;
+  --border-color: var(--input-border);
+  --border-width: 1px;
+  --color: var(--text);
+  flex: 1;
+}
+
+// ---- Hoja de cambio de contraseña ----
+
+// Altura según el contenido: la hoja ocupa solo lo que necesita el formulario
+ion-modal.password-sheet {
+  --height: auto;
+  // Solo las esquinas superiores: abajo la hoja queda pegada al borde de la pantalla
+  --border-radius: 24px 24px 0 0;
+  --background: #ffffff;
+
+  .ion-page {
+    position: relative;
+    display: block;
+    contain: content;
+  }
+}
+
+.sheet {
+  padding: 28px 20px calc(16px + var(--ion-safe-area-bottom, 0px));
+  color: var(--text);
+
+  // Campos iguales a los del login
+  .field {
+    margin-bottom: 20px;
+    padding: 0;
+  }
+
+  .field-label {
+    margin-bottom: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .field-input {
+    // ion-input hereda el --border-radius del ion-modal (24px 24px 0 0) y dibujaba un óvalo dentro del campo;
+    // las esquinas ya las da el borde de 12px con overflow: hidden
+    --border-radius: 0;
+    --padding-start: 16px;
+    min-height: 52px;
+  }
+}
+
+.sheet-title {
+  margin: 0 0 20px;
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.btn-block {
+  display: block;
+  margin-top: 16px;
+}
+
+.btn-link {
+  display: block;
+  width: 100%;
+  min-height: 44px;
+  margin-top: 8px;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  font-size: 15px;
+  font-weight: 700;
 }

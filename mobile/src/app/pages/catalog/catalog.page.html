@@ -1,10 +1,10 @@
 <ion-header class="ion-no-border">
   <div class="hero">
-    @if (userName) {
+    @if (deliveryName(); as name) {
       <p class="hero-label">Entregar en</p>
       <p class="hero-location">
         <ion-icon name="location-outline"></ion-icon>
-        <span>{{ userName }}</span>
+        <span>{{ name }}</span>
       </p>
     }
     <h1 class="hero-title">¿Qué te llevamos hoy?</h1>

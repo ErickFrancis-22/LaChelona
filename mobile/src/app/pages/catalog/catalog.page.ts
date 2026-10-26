@@ -39,7 +39,10 @@ export class CatalogPage {
   private readonly productService = inject(ProductService);
   private readonly search$ = new Subject<string>();
 
-  readonly userName = inject(AuthService).getUserName();
+  private readonly auth = inject(AuthService);
+
+  // Nombre del negocio (o del encargado si no se pudo obtener); se relee al volver a la pestaña por si cambió en el perfil
+  readonly deliveryName = signal(this.readDeliveryName());
   readonly skeletons = [1, 2, 3, 4];
   readonly pastelColor = pastelColor;
 
@@ -80,6 +83,10 @@ export class CatalogPage {
     this.loadCategories();
   }
 
+  ionViewWillEnter(): void {
+    this.deliveryName.set(this.readDeliveryName());
+  }
+
   loadCategories(): void {
     this.status.set('loading');
     this.categoryService.getCategories().subscribe({
@@ -105,5 +112,9 @@ export class CatalogPage {
 
   retrySearch(): void {
     this.search$.next(this.searchTerm());
+  }
+
+  private readDeliveryName(): string | null {
+    return this.auth.getBusinessName() ?? this.auth.getUserName();
   }
 }
