@@ -3,333 +3,227 @@
   <div class="admin-layout">
     <!-- Barra lateral -->
     <aside class="sidebar">
-      <div class="brand">
-        <div class="brand-icon">
-    <img src="/logo-chelonapp.png" alt="Logo La Chelona">
 
-     
-</div>
-        <div>
-          <h2>La Chelona</h2>
-          <span>Panel administrativo</span>
-        </div>
+      <!-- Logo y nombre -->
+      <div class="brand">
+        <img
+          src="/logo-chelonapp.png"
+          alt="Logo La Chelona App"
+          class="brand-logo"
+        />
       </div>
 
-      <div class="menu-label">MENÚ PRINCIPAL</div>
+      <!-- Menú de navegación -->
+      <nav class="menu">
 
-      <nav class="navigation">
         <RouterLink
           to="/admin"
-          class="nav-link"
+          class="menu-item"
+          active-class="active"
           exact-active-class="active"
         >
-          <span class="nav-icon">▦</span>
-          <span>Dashboard</span>
+          <span class="menu-icon">▣</span>
+          <span>Pedidos del día</span>
         </RouterLink>
 
-        <div class="menu-label">GESTIÓN COMERCIAL</div>
-
-        <RouterLink to="/admin/clientes" class="nav-link" active-class="active">
-          <span class="nav-icon">♙</span>
-          <span>Clientes</span>
-        </RouterLink>
-
-        <RouterLink to="/admin/productos" class="nav-link" active-class="active">
-          <span class="nav-icon">▣</span>
+        <RouterLink
+          to="/admin/productos"
+          class="menu-item"
+          active-class="active"
+        >
+          <span class="menu-icon">◉</span>
           <span>Productos</span>
         </RouterLink>
 
-        <RouterLink to="/admin/pedidos" class="nav-link" active-class="active">
-          <span class="nav-icon">▤</span>
-          <span>Pedidos</span>
-        </RouterLink>
-
-        <RouterLink to="/admin/categorias" class="nav-link" active-class="active">
-          <span class="nav-icon">▧</span>
+        <RouterLink
+          to="/admin/categorias"
+          class="menu-item"
+          active-class="active"
+        >
+          <span class="menu-icon">◆</span>
           <span>Categorías</span>
         </RouterLink>
 
-        <div class="menu-label">CONTROL Y ANÁLISIS</div>
-
-        <RouterLink to="/admin/inventario" class="nav-link" active-class="active">
-          <span class="nav-icon">▥</span>
-          <span>Inventario</span>
+        <RouterLink
+          to="/admin/clientes"
+          class="menu-item"
+          active-class="active"
+        >
+          <span class="menu-icon">♙</span>
+          <span>Clientes</span>
         </RouterLink>
 
-        <RouterLink to="/admin/informes" class="nav-link" active-class="active">
-          <span class="nav-icon">▤</span>
-          <span>Informes</span>
-        </RouterLink>
+  <RouterLink to="/admin/reportes" class="menu-item">
+  <span class="menu-icon">▥</span>
+  <span>Reportes</span>
+</RouterLink>
+
       </nav>
 
-      <div class="sidebar-footer">
-        <span class="status-dot"></span>
-        Sistema administrativo
-      </div>
+      
+
     </aside>
 
     <!-- Contenido principal -->
-    <div class="main-area">
-      <header class="topbar">
-        <div>
-          <span class="breadcrumb">La Chelona / Administración</span>
-        <h1>{{ pageTitle }}</h1>
-        </div>
-
-        <div class="user-profile">
-          <div class="avatar">AD</div>
-          <div>
-            <strong>Administrador</strong>
-            <span>Panel de gestión</span>
-          </div>
-        </div>
-      </header>
-
-      <main class="content">
-        <RouterView />
-      </main>
-
-      <footer class="footer">
-        La Chelona · Sistema de gestión
-      </footer>
-    </div>
+    <main class="main-content">
+      <RouterView />
+    </main>
   </div>
 </template>
 
-<script setup lang="ts">
-import { computed } from 'vue'
-import { useRoute } from 'vue-router'
-
-const route = useRoute()
-
-const pageTitle = computed(
-  () => (route.meta.title as string) || 'Panel administrativo',
-)
+<script setup>
+import { RouterLink, RouterView } from 'vue-router'
 </script>
 
-<style>
-:root {
-  font-family: Inter, "Segoe UI", Arial, sans-serif;
-  color: #202b3c;
-  background: #f4f6fa;
-}
-
+<style scoped>
 * {
   box-sizing: border-box;
 }
 
-body {
-  margin: 0;
-}
-
 .admin-layout {
-  min-height: 100vh;
   display: flex;
+  min-height: 100vh;
+  background: #f5f7fb;
+  font-family: Arial, Helvetica, sans-serif;
 }
 
+/* Barra lateral */
 .sidebar {
-  width: 255px;
-  flex-shrink: 0;
-  background: #17243a;
-  color: #d5deeb;
+  width: 250px;
+  min-width: 250px;
+  min-height: 100vh;
+  padding: 20px 12px 16px;
+  background-color: #1d355b;
+  color: #ffffff;
   display: flex;
   flex-direction: column;
-  padding: 24px 16px;
 }
 
+/* Logo */
 .brand {
+  width: 100%;
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 0 8px 30px;
+  justify-content: center;
+  margin-bottom: 24px;
 }
 
-.brand-icon {
-  width: 48px;
-  height: 48px;
-  flex-shrink: 0;
-  background: white;
-  border-radius: 10px;
-  display: grid;
-  place-items: center;
-  overflow: hidden;
-}
-
-.brand-icon img {
-  width: 100%;
-  height: 100%;
+.brand-logo {
+  width: 175px;
+  height: 100px;
   object-fit: contain;
-}
-
-.brand h2 {
-  font-size: 17px;
-  margin: 0 0 5px;
-  color: white;
-}
-
-.brand span,
-.user-profile span {
   display: block;
-  font-size: 11px;
-  color: #aab8cc;
 }
 
-.menu-label {
-  color: #8292aa;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 1px;
-  margin: 20px 10px 10px;
-}
-
-.navigation {
+/* Menú */
+.menu {
   display: flex;
   flex-direction: column;
   gap: 5px;
 }
 
-.nav-link {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px;
-  color: #c6d1e1;
-  text-decoration: none;
-  border-radius: 8px;
-  font-size: 13px;
-  transition: background 0.2s;
-}
-
-.nav-link:hover {
-  background: #263750;
-  color: white;
-}
-
-.nav-link.active {
-  background: #f59e0b;
-  color: #17243a;
-  font-weight: 700;
-}
-
-.nav-icon {
-  width: 20px;
-  text-align: center;
-  font-size: 17px;
-}
-
-.sidebar-footer {
-  margin-top: auto;
-  padding: 18px 8px 0;
-  font-size: 11px;
-  color: #aab8cc;
-  border-top: 1px solid #344158;
-}
-
-.status-dot {
-  display: inline-block;
-  width: 7px;
-  height: 7px;
-  background: #34d399;
-  border-radius: 50%;
-  margin-right: 6px;
-}
-
-.main-area {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-}
-
-.topbar {
-  background: white;
-  padding: 22px 32px;
-  border-bottom: 1px solid #e5e9f0;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-}
-
-.breadcrumb {
-  font-size: 11px;
-  color: #8a96a8;
-}
-
-.topbar h1 {
-  margin: 7px 0 0;
-  font-size: 22px;
-}
-
-.user-profile {
+.menu-item {
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 12px;
+  width: 100%;
+  min-height: 38px;
+  padding: 10px 12px;
+  color: #c8d2e2;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: 9px;
+  transition: background-color 0.2s, color 0.2s;
 }
 
-.user-profile strong {
-  display: block;
-  margin-bottom: 4px;
+.menu-item:hover {
+  background-color: #29466f;
+  color: #ffffff;
 }
 
-.avatar {
-  width: 38px;
-  height: 38px;
-  display: grid;
-  place-items: center;
-  border-radius: 50%;
-  background: #e0e7ff;
-  color: #3748a0;
+/* Opción seleccionada */
+.menu-item.active {
+  background-color: #ffc400;
+  color: #1d355b;
   font-weight: 700;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.12);
 }
 
-.content {
-  flex: 1;
-  padding: 30px;
+.menu-icon {
+  width: 15px;
+  min-width: 15px;
+  text-align: center;
+  font-size: 13px;
 }
 
-.footer {
-  padding: 18px 30px;
+/* Perfil inferior */
+.user-profile {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-top: auto;
+  padding: 12px 3px 0;
+}
+
+.user-avatar {
+  width: 34px;
+  height: 34px;
+  min-width: 34px;
+  border-radius: 50%;
+  background-color: #ffc400;
+  color: #1d355b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-size: 11px;
-  color: #8a96a8;
-  border-top: 1px solid #e5e9f0;
-  background: white;
+  font-weight: 800;
 }
 
-@media (max-width: 760px) {
+.user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  overflow: hidden;
+}
+
+.user-info strong {
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.user-info span {
+  font-size: 9px;
+  color: #b9c7db;
+}
+
+/* Contenido de las páginas */
+.main-content {
+  flex: 1;
+  min-width: 0;
+  padding: 24px;
+}
+
+/* Adaptación a pantallas pequeñas */
+@media (max-width: 600px) {
   .sidebar {
-    width: 75px;
-    padding: 20px 8px;
+    width: 190px;
+    min-width: 190px;
+    padding: 16px 9px;
   }
 
-  .brand {
-    justify-content: center;
-    padding: 0 0 20px;
+  .brand-logo {
+    width: 155px;
   }
 
-  .brand > div:last-child,
-  .menu-label,
-  .nav-link span:last-child,
-  .sidebar-footer {
-    display: none;
+  .menu-item {
+    font-size: 12px;
+    padding: 9px 7px;
   }
 
-  .nav-link {
-    justify-content: center;
-    padding: 13px 5px;
-  }
-
-  .topbar {
-    padding: 18px;
-  }
-
-  .user-profile > div:last-child {
-    display: none;
-  }
-
-  .content {
-    padding: 18px;
+  .main-content {
+    padding: 14px;
   }
 }
 </style>

@@ -2,6 +2,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import AdminLayout from '../layouts/AdminLayout.vue'
 import DashboardView from '../views/admin/DashboardView.vue'
+import LoginView from '../LoginView.vue'
 
 const PlaceholderView = {
   template: `
@@ -16,7 +17,12 @@ const PlaceholderView = {
 const routes = [
   {
     path: '/',
-    redirect: '/admin',
+    redirect: '/login',
+  },
+  {
+    path: '/login',
+    name: 'login',
+    component: LoginView,
   },
   {
     path: '/admin',
@@ -64,17 +70,18 @@ const routes = [
         meta: { title: 'Inventario' },
       },
       {
-        path: 'informes',
-        name: 'admin-informes',
+        path: 'reportes',
+        alias: 'informes',
+        name: 'admin-reportes',
         component: PlaceholderView,
-        props: { title: 'Informes' },
-        meta: { title: 'Informes' },
+        props: { title: 'Reportes' },
+        meta: { title: 'Reportes' },
       },
     ],
   },
   {
     path: '/:pathMatch(.*)*',
-    redirect: '/admin',
+    redirect: '/login',
   },
 ]
 
