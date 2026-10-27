@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable, catchError, finalize, map, of, switchMap, tap } from 'rxjs';
 import { ApiService } from './api.service';
+import { CartService } from './cart.service';
 import { ProfileResponse } from '../models/profile.model';
 
 export interface LoginRequest {
@@ -62,6 +63,7 @@ const BUSINESS_NAME_KEY = 'auth_business_name';
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly api = inject(ApiService);
+  private readonly cart = inject(CartService);
 
   // El login no trae el nombre del negocio: se pide a GET profile para mostrarlo en "Entregar en".
   // Si esa consulta falla la sesión sigue igual y el catálogo usa el nombre del encargado
@@ -124,5 +126,7 @@ export class AuthService {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USER_NAME_KEY);
     localStorage.removeItem(BUSINESS_NAME_KEY);
+    // Otra cuenta en el mismo teléfono no debe heredar el carrito
+    this.cart.clear();
   }
 }

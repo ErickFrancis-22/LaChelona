@@ -8,6 +8,7 @@ import { EMPTY, Subject, catchError, debounceTime, switchMap, tap } from 'rxjs';
 import { Category } from '../../models/category.model';
 import { Product } from '../../models/product.model';
 import { AuthService } from '../../services/auth.service';
+import { CartService } from '../../services/cart.service';
 import { CategoryService } from '../../services/category.service';
 import { ProductService } from '../../services/product.service';
 import { pastelColor } from '../../utils/pastel-color';
@@ -37,6 +38,8 @@ type LoadStatus = 'loading' | 'ready' | 'error';
 export class CatalogPage {
   private readonly categoryService = inject(CategoryService);
   private readonly productService = inject(ProductService);
+  // Los resultados de búsqueda refrescan precio y stock de los productos que ya están en el carrito
+  private readonly cart = inject(CartService);
   private readonly search$ = new Subject<string>();
 
   private readonly auth = inject(AuthService);
@@ -67,6 +70,7 @@ export class CatalogPage {
           this.searchStatus.set('loading');
           return this.productService.getProducts({ search: term }).pipe(
             tap((products) => {
+              this.cart.syncProducts(products);
               this.searchResults.set(products);
               this.searchStatus.set('ready');
             }),
