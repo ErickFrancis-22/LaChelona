@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\AdminClientController;
+use App\Http\Controllers\Api\AdminProductController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/health', function () {
@@ -43,5 +44,11 @@ Route::prefix('admin')
         Route::get('/clients/{id}', [AdminClientController::class, 'show']);
         Route::put('/clients/{id}', [AdminClientController::class, 'update']);
         Route::patch('/clients/{id}/status', [AdminClientController::class, 'updateStatus']);
+        
+        Route::get('/products', [AdminProductController::class, 'index']);
+        Route::post('/products', [AdminProductController::class, 'store']);
+        Route::get('/products/{id}', [AdminProductController::class, 'show']);
+        Route::put('/products/{id}', [AdminProductController::class, 'update']);
+        Route::patch('/products/{id}/status', [AdminProductController::class, 'updateStatus']);
         // TT34, TT35, TT36...
     });
