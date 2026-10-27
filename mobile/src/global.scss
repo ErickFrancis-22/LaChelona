@@ -67,8 +67,9 @@
   }
 }
 
-// Aviso de éxito: tarjeta blanca con solo el ícono en verde. Los toasts se crean fuera de las páginas, por eso viven aquí
-ion-toast.toast-success {
+// Avisos: tarjeta blanca con solo el ícono en color (verde éxito, ámbar advertencia). Los toasts se crean fuera de las páginas, por eso viven aquí
+ion-toast.toast-success,
+ion-toast.toast-warning {
   --background: #ffffff;
   --color: #1b1f2a;
   --border-radius: 14px;
@@ -91,4 +92,8 @@ ion-toast.toast-success {
     font-size: 15px;
     font-weight: 600;
   }
+}
+
+ion-toast.toast-warning::part(icon) {
+  color: #c77700;
 }
