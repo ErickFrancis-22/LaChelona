@@ -127,7 +127,7 @@
 
 
 <script setup lang="ts">
-import { computed } from 'vue'
+
 
 const fechaActual = computed(() =>
   new Intl.DateTimeFormat('es-SV', {
@@ -312,6 +312,13 @@ function filteredOrders(status: OrderStatus) {
 
     return matchesStatus && matchesSearch
   })
+}
+function changeStatus(orderId: number, newStatus: OrderStatus) {
+  orders.value = orders.value.map((order) =>
+    order.id === orderId
+      ? { ...order, status: newStatus }
+      : order
+  )
 }
 
 onMounted(loadOrders)
