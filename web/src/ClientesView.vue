@@ -6,25 +6,24 @@ const busqueda = ref('')
 const filtroActivo = ref<'todos' | 'activos' | 'inactivos'>('todos')
 const periodo = ref('3')
 
-const clientes = ref<
-  {
-    id: number
-    nombre: string
-    direccion: string
-    referencia: string
-    contacto: string
-    telefono: string
-    correo: string
-    activo: boolean
-  }[]
->([])
+interface Cliente {
+  id: number
+  nombre: string
+  direccion: string
+  referencia: string
+  contacto: string
+  telefono: string
+  correo: string
+  activo: boolean
+}
 
+const clientes = ref<Cliente[]>([])
 const clienteSeleccionado = ref<number | null>(null)
 
 const clientesFiltrados = computed(() => {
-  return clientes.value.filter((cliente) => {
-    const texto = busqueda.value.toLowerCase().trim()
+  const texto = busqueda.value.toLowerCase().trim()
 
+  return clientes.value.filter((cliente) => {
     const coincideTexto =
       cliente.nombre.toLowerCase().includes(texto) ||
       cliente.contacto.toLowerCase().includes(texto)
@@ -48,412 +47,253 @@ const totalInactivos = computed(
 
 const clienteActual = computed(
   () =>
-    clientes.value.find((cliente) => cliente.id === clienteSeleccionado.value) ??
-    null,
+    clientes.value.find(
+      (cliente) => cliente.id === clienteSeleccionado.value,
+    ) ?? null,
 )
 
 function limpiarFiltros() {
   busqueda.value = ''
   filtroActivo.value = 'todos'
+  clienteSeleccionado.value = null
 }
 </script>
 
 <template>
-  <div class="admin-layout">
-    <aside class="sidebar">
-      <div class="logo-container">
-  <!-- AQUÍ VA LA IMAGEN DE TU LOGO -->
-  <img
-    src="/logo-chelonapp-oscuro.png"
-    alt="Logo La ChelonAPP"
-    class="logo-image"
-  />
-</div>
+  <main class="clients-page">
+    <header class="page-header">
+      <div class="eyebrow">NEGOCIOS REGISTRADOS</div>
+      <h1>Clientes</h1>
+    </header>
 
-      <nav class="menu">
-        <a href="#" class="menu-item">
-          <span class="menu-icon">▣</span>
-          <span>Pedidos del día</span>
-        </a>
-
-        <a href="#" class="menu-item">
-          <span class="menu-icon">◇</span>
-          <span>Productos</span>
-        </a>
-
-        <a href="#" class="menu-item">
-          <span class="menu-icon">☷</span>
-          <span>Categorías</span>
-        </a>
-
-        <a href="/Clientes" class="menu-item active" @click.prevent>
-          <span class="menu-icon">♧</span>
-          <span>Clientes</span>
-        </a>
-
-        <a href="#" class="menu-item">
-          <span class="menu-icon">▥</span>
-          <span>Reportes</span>
-        </a>
-      </nav>
-
-      <div class="sidebar-account">
-        <div class="account-avatar">U</div>
-        <div class="account-text">
-          <strong>Mi cuenta</strong>
-          <span>Administrador</span>
+    <div class="clients-layout">
+      <!-- LISTA DE CLIENTES -->
+      <section class="clients-list card">
+        <div class="search-box">
+          <span class="search-icon" aria-hidden="true">⌕</span>
+          <input
+            v-model="busqueda"
+            type="search"
+            placeholder="Negocio o contacto"
+            aria-label="Buscar negocio o contacto"
+          />
         </div>
-      </div>
-    </aside>
 
-    <main class="main-content">
-      <header class="page-header">
-        <div class="eyebrow">NEGOCIOS REGISTRADOS</div>
-        <h1>Clientes</h1>
-      </header>
-
-      <div class="clients-layout">
-        <section class="clients-list card">
-          <div class="search-box">
-            <span class="search-icon">⌕</span>
-            <input
-              v-model="busqueda"
-              type="search"
-              placeholder="Negocio o contacto"
-              aria-label="Buscar negocio o contacto"
-            />
-          </div>
-
-          <div class="filter-tabs">
-            <button
-              type="button"
-              :class="{ selected: filtroActivo === 'todos' }"
-              @click="filtroActivo = 'todos'; clienteSeleccionado = null"
-            >
-              Todos · {{ clientes.length }}
-            </button>
-
-            <button
-              type="button"
-              :class="{ selected: filtroActivo === 'activos' }"
-              @click="filtroActivo = 'activos'; clienteSeleccionado = null"
-            >
-              Activos · {{ totalActivos }}
-            </button>
-
-            <button
-              type="button"
-              :class="{ selected: filtroActivo === 'inactivos' }"
-              @click="filtroActivo = 'inactivos'; clienteSeleccionado = null"
-            >
-              Inactivos · {{ totalInactivos }}
-            </button>
-          </div>
-
-          <div v-if="clientesFiltrados.length === 0" class="empty-clients">
-            <div class="empty-search-icon">⌕</div>
-            <h2>No se encontraron clientes</h2>
-            <p>
-              Los clientes aparecerán aquí cuando<br class="desktop-break" />
-              se carguen desde la base de datos.
-            </p>
-            <button
-              v-if="busqueda || filtroActivo !== 'todos'"
-              type="button"
-              class="secondary-button"
-              @click="limpiarFiltros"
-            >
-              Limpiar filtros
-            </button>
-          </div>
+        <div class="filter-tabs">
+          <button
+            type="button"
+            :class="{ selected: filtroActivo === 'todos' }"
+            @click="filtroActivo = 'todos'; clienteSeleccionado = null"
+          >
+            Todos · {{ clientes.length }}
+          </button>
 
           <button
-            v-for="cliente in clientesFiltrados"
-            :key="cliente.id"
             type="button"
-            class="client-row"
-            :class="{ 'client-row-selected': clienteSeleccionado === cliente.id }"
-            @click="clienteSeleccionado = cliente.id"
+            :class="{ selected: filtroActivo === 'activos' }"
+            @click="filtroActivo = 'activos'; clienteSeleccionado = null"
           >
-            <span class="client-avatar">
-              {{ cliente.nombre.slice(0, 2).toUpperCase() }}
-            </span>
-            <span class="client-row-info">
-              <strong>{{ cliente.nombre }}</strong>
-              <small>{{ cliente.direccion || 'Dirección no registrada' }}</small>
-            </span>
-            <span
-              class="client-status"
-              :class="cliente.activo ? 'status-active' : 'status-inactive'"
-            >
-              {{ cliente.activo ? 'Activo' : 'Inactivo' }}
-            </span>
+            Activos · {{ totalActivos }}
           </button>
-        </section>
 
-        <div class="client-details-column">
-          <section class="client-details card">
-            <div class="details-heading">
-              <div class="details-title">
+          <button
+            type="button"
+            :class="{ selected: filtroActivo === 'inactivos' }"
+            @click="filtroActivo = 'inactivos'; clienteSeleccionado = null"
+          >
+            Inactivos · {{ totalInactivos }}
+          </button>
+        </div>
+
+        <div
+          v-if="clientesFiltrados.length === 0"
+          class="empty-clients"
+        >
+          <div class="empty-search-icon">⌕</div>
+          <h2>No se encontraron clientes</h2>
+          <p>
+            Los clientes aparecerán aquí cuando
+            <br class="desktop-break" />
+            se carguen desde la base de datos.
+          </p>
+
+          <button
+            v-if="busqueda || filtroActivo !== 'todos'"
+            type="button"
+            class="secondary-button"
+            @click="limpiarFiltros"
+          >
+            Limpiar filtros
+          </button>
+        </div>
+
+        <button
+          v-for="cliente in clientesFiltrados"
+          :key="cliente.id"
+          type="button"
+          class="client-row"
+          :class="{
+            'client-row-selected': clienteSeleccionado === cliente.id,
+          }"
+          @click="clienteSeleccionado = cliente.id"
+        >
+          <span class="client-avatar">
+            {{ cliente.nombre.slice(0, 2).toUpperCase() }}
+          </span>
+
+          <span class="client-row-info">
+            <strong>{{ cliente.nombre }}</strong>
+            <small>{{ cliente.direccion || 'Dirección no registrada' }}</small>
+          </span>
+
+          <span
+            class="client-status"
+            :class="cliente.activo ? 'status-active' : 'status-inactive'"
+          >
+            {{ cliente.activo ? 'Activo' : 'Inactivo' }}
+          </span>
+        </button>
+      </section>
+
+      <!-- DETALLES DEL CLIENTE -->
+      <div class="client-details-column">
+        <section class="client-details card">
+          <div class="details-heading">
+            <div class="details-title">
+              <template v-if="clienteActual">
+                <h2>{{ clienteActual.nombre }}</h2>
+                <p>{{ clienteActual.direccion }}</p>
+              </template>
+
+              <template v-else>
                 <div class="skeleton skeleton-title"></div>
                 <div class="skeleton skeleton-subtitle"></div>
-              </div>
-
-              <span class="account-status">
-                <span class="status-dot"></span>
-                Cuenta
-              </span>
+              </template>
             </div>
 
-            <div class="delivery-panel">
-              <h3>
-                <span class="location-icon">♧</span>
-                DIRECCIÓN DE ENTREGA
-              </h3>
+            <span class="account-status">
+              <span
+                class="status-dot"
+                :class="{
+                  'status-active-dot': clienteActual?.activo,
+                  'status-inactive-dot':
+                    clienteActual && !clienteActual.activo,
+                }"
+              ></span>
+              {{ clienteActual
+                ? clienteActual.activo ? 'Activo' : 'Inactivo'
+                : 'Cuenta' }}
+            </span>
+          </div>
 
+          <div class="delivery-panel">
+            <h3>
+              <span class="location-icon">♧</span>
+              DIRECCIÓN DE ENTREGA
+            </h3>
+
+            <template v-if="clienteActual">
+              <p class="detail-value">
+                {{ clienteActual.direccion || 'Sin dirección registrada' }}
+              </p>
+
+              <div class="reference-line">
+                <span>Referencia:</span>
+                <span>
+                  {{ clienteActual.referencia || 'Sin referencia' }}
+                </span>
+              </div>
+            </template>
+
+            <template v-else>
               <div class="skeleton address-skeleton"></div>
 
               <div class="reference-line">
                 <span>Referencia:</span>
                 <div class="skeleton reference-skeleton"></div>
               </div>
+            </template>
 
-              <div class="map-placeholder">
-                <span class="map-pin">●</span>
-                <span>MAPA DE UBICACIÓN</span>
-                <!-- AQUÍ VA LA IMAGEN DEL MAPA, SI SE AGREGA DESPUÉS -->
-              </div>
+            <div class="map-placeholder">
+              <span class="map-pin">●</span>
+              <span>MAPA DE UBICACIÓN</span>
+            </div>
+          </div>
+
+          <div class="contact-grid">
+            <div class="contact-field">
+              <span>Contacto</span>
+              <strong v-if="clienteActual">
+                {{ clienteActual.contacto || 'No registrado' }}
+              </strong>
+              <div v-else class="skeleton contact-skeleton"></div>
             </div>
 
-            <div class="contact-grid">
-              <div class="contact-field">
-                <span>Contacto</span>
-                <div class="skeleton contact-skeleton"></div>
-              </div>
-
-              <div class="contact-field">
-                <span>Teléfono</span>
-                <div class="skeleton phone-skeleton"></div>
-              </div>
-
-              <div class="contact-field email-field">
-                <span>Correo</span>
-                <div class="skeleton email-skeleton"></div>
-              </div>
-            </div>
-          </section>
-
-          <section class="order-history card">
-            <div class="history-header">
-              <h2>Historial de pedidos</h2>
-              <select v-model="periodo" aria-label="Período del historial">
-                <option value="1">Último mes</option>
-                <option value="3">Últimos 3 meses</option>
-                <option value="6">Últimos 6 meses</option>
-                <option value="12">Último año</option>
-              </select>
+            <div class="contact-field">
+              <span>Teléfono</span>
+              <strong v-if="clienteActual">
+                {{ clienteActual.telefono || 'No registrado' }}
+              </strong>
+              <div v-else class="skeleton phone-skeleton"></div>
             </div>
 
-            <div class="empty-history">
-              <div class="history-icon">
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="1.5"
-                  aria-hidden="true"
-                >
-                  <rect x="5" y="3" width="14" height="18" rx="1" />
-                  <path d="M8 8h8M8 12h8M8 16h5" />
-                </svg>
-              </div>
-
-              <h3>Sin pedidos registrados</h3>
-              <p>El historial aparecerá cuando existan pedidos.</p>
+            <div class="contact-field email-field">
+              <span>Correo</span>
+              <strong v-if="clienteActual">
+                {{ clienteActual.correo || 'No registrado' }}
+              </strong>
+              <div v-else class="skeleton email-skeleton"></div>
             </div>
-          </section>
-        </div>
+          </div>
+        </section>
+
+        <!-- HISTORIAL DE PEDIDOS -->
+        <section class="order-history card">
+          <div class="history-header">
+            <h2>Historial de pedidos</h2>
+
+            <select v-model="periodo" aria-label="Período del historial">
+              <option value="1">Último mes</option>
+              <option value="3">Últimos 3 meses</option>
+              <option value="6">Últimos 6 meses</option>
+              <option value="12">Último año</option>
+            </select>
+          </div>
+
+          <div class="empty-history">
+            <div class="history-icon">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+                aria-hidden="true"
+              >
+                <rect x="5" y="3" width="14" height="18" rx="1" />
+                <path d="M8 8h8M8 12h8M8 16h5" />
+              </svg>
+            </div>
+
+            <h3>Sin pedidos registrados</h3>
+            <p>El historial aparecerá cuando existan pedidos.</p>
+          </div>
+        </section>
       </div>
-    </main>
-  </div>
+    </div>
+  </main>
 </template>
 
-<style>
-:root {
-  font-family: Arial, Helvetica, sans-serif;
-  color: #10284b;
+<style scoped>
+.clients-page {
+  min-height: 100vh;
+  padding: 25px 26px 32px;
   background: #f1f4fa;
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-}
-
-.logo-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  margin-bottom: 22px;  
-}
-
-.logo-image {
-  display: block;
-  width: 100%;
-  max-width: 130px;
-  height: 105px;
-  object-fit: contain;
+  color: #10284b;
+  font-family: Arial, Helvetica, sans-serif;
 }
 
 * {
   box-sizing: border-box;
-}
-
-html,
-body,
-#app {
-  width: 100%;
-  min-width: 320px;
-  min-height: 100%;
-  margin: 0;
-}
-
-body {
-  min-height: 100vh;
-}
-
-button,
-input,
-select {
-  font: inherit;
-}
-
-button {
-  cursor: pointer;
-}
-
-.admin-layout {
-  display: flex;
-  width: 100%;
-  min-height: 100vh;
-  background: #f1f4fa;
-}
-
-.sidebar {
-  position: sticky;
-  top: 0;
-  display: flex;
-  flex: 0 0 150px;
-  flex-direction: column;
-  width: 150px;
-  height: 100vh;
-  min-height: 620px;
-  padding: 24px 12px 12px;
-  color: #fff;
-  background: #1d365b;
-}
-
-.logo-container {
-  display: flex;
-  justify-content: center;
-  width: 100%;
-  margin-bottom: 22px;
-}
-
-.logo-placeholder {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 105px;
-  border: 1px dashed #8fa4c3;
-  border-radius: 7px;
-  color: #fff;
-  font-size: 11px;
-  font-weight: 700;
-  line-height: 1.5;
-  text-align: center;
-}
-
-.menu {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-
-.menu-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  min-height: 37px;
-  padding: 0 9px;
-  border-radius: 7px;
-  color: #fff;
-  font-size: 10px;
-  text-decoration: none;
-  white-space: nowrap;
-}
-
-.menu-item:hover {
-  background: rgb(255 255 255 / 9%);
-}
-
-.menu-item.active {
-  color: #142d50;
-  background: #ffc400;
-  font-weight: 700;
-}
-
-.menu-icon {
-  display: inline-flex;
-  flex: 0 0 15px;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
-}
-
-.sidebar-account {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: auto;
-  padding: 12px 0 3px;
-  border-top: 1px solid rgb(255 255 255 / 14%);
-}
-
-.account-avatar {
-  display: flex;
-  flex: 0 0 26px;
-  align-items: center;
-  justify-content: center;
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  color: #17345a;
-  background: #ffc400;
-  font-size: 11px;
-  font-weight: 700;
-}
-
-.account-text {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  min-width: 0;
-}
-
-.account-text strong {
-  font-size: 9px;
-}
-
-.account-text span {
-  color: #d6e0ee;
-  font-size: 8px;
-}
-
-.main-content {
-  flex: 1;
-  min-width: 0;
-  padding: 25px 26px 32px;
 }
 
 .page-header {
@@ -503,6 +343,7 @@ button {
   padding: 0 12px;
   border: 1px solid #d6e1ef;
   border-radius: 8px;
+  background: #fff;
 }
 
 .search-icon {
@@ -545,6 +386,7 @@ button {
   background: transparent;
   font-size: 10px;
   white-space: nowrap;
+  cursor: pointer;
 }
 
 .filter-tabs button.selected {
@@ -598,10 +440,7 @@ button {
   color: #1c3b63;
   background: #fff;
   font-size: 11px;
-}
-
-.secondary-button:hover {
-  background: #f5f8fc;
+  cursor: pointer;
 }
 
 .client-row {
@@ -615,6 +454,7 @@ button {
   border-radius: 8px;
   background: #fff;
   text-align: left;
+  cursor: pointer;
 }
 
 .client-row-selected {
@@ -698,7 +538,20 @@ button {
   flex: 1;
   flex-direction: column;
   gap: 8px;
+  min-width: 0;
   padding-top: 2px;
+}
+
+.details-title h2 {
+  margin: 0;
+  color: #142d4d;
+  font-size: 16px;
+}
+
+.details-title p {
+  margin: 0;
+  color: #74849a;
+  font-size: 11px;
 }
 
 .skeleton {
@@ -737,6 +590,14 @@ button {
   background: #a9b7c8;
 }
 
+.status-active-dot {
+  background: #27845a;
+}
+
+.status-inactive-dot {
+  background: #c64a43;
+}
+
 .delivery-panel {
   padding: 14px 12px 12px;
   border: 1px solid #ffdc81;
@@ -756,6 +617,12 @@ button {
 
 .location-icon {
   font-size: 15px;
+}
+
+.detail-value {
+  margin: 0 0 12px;
+  color: #526783;
+  font-size: 11px;
 }
 
 .address-skeleton {
@@ -813,6 +680,13 @@ button {
   min-width: 0;
   color: #75849b;
   font-size: 9px;
+}
+
+.contact-field strong {
+  overflow-wrap: anywhere;
+  color: #526783;
+  font-size: 11px;
+  font-weight: 500;
 }
 
 .contact-skeleton {
@@ -902,12 +776,7 @@ button {
 }
 
 @media (min-width: 1500px) {
-  .sidebar {
-    flex-basis: 150px;
-    width: 150px;
-  }
-
-  .main-content {
+  .clients-page {
     padding: 30px 28px;
   }
 
@@ -939,25 +808,13 @@ button {
 }
 
 @media (max-width: 900px) {
-  .sidebar {
-    flex-basis: 118px;
-    width: 118px;
-    padding: 16px 8px 10px;
-  }
-
-  .main-content {
+  .clients-page {
     padding: 20px 16px;
   }
 
   .clients-layout {
     grid-template-columns: minmax(225px, 0.8fr) minmax(0, 1.4fr);
     gap: 10px;
-  }
-
-  .menu-item {
-    gap: 6px;
-    padding: 0 6px;
-    font-size: 9px;
   }
 
   .client-details {
@@ -978,65 +835,7 @@ button {
 }
 
 @media (max-width: 620px) {
-  .admin-layout {
-    display: block;
-    min-height: 100vh;
-  }
-
-  .sidebar {
-    position: relative;
-    z-index: 2;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    height: auto;
-    min-height: 64px;
-    padding: 10px 14px;
-  }
-
-  .logo-container {
-    width: 55px;
-    margin: 0;
-  }
-
-  .logo-placeholder {
-    height: 42px;
-    border-radius: 5px;
-    font-size: 8px;
-    line-height: 1.2;
-  }
-
-  .menu {
-    flex: 1;
-    flex-direction: row;
-    justify-content: flex-end;
-    gap: 3px;
-    margin-left: 8px;
-  }
-
-  .menu-item {
-    justify-content: center;
-    min-width: 33px;
-    min-height: 35px;
-    padding: 5px;
-    border-radius: 6px;
-  }
-
-  .menu-item span:last-child {
-    display: none;
-  }
-
-  .menu-icon {
-    font-size: 15px;
-  }
-
-  .sidebar-account {
-    display: none;
-  }
-
-  .main-content {
+  .clients-page {
     padding: 22px 14px 28px;
   }
 
@@ -1131,24 +930,7 @@ button {
 }
 
 @media (max-width: 380px) {
-  .sidebar {
-    padding: 9px;
-  }
-
-  .logo-container {
-    width: 47px;
-  }
-
-  .menu {
-    margin-left: 4px;
-  }
-
-  .menu-item {
-    min-width: 28px;
-    padding: 3px;
-  }
-
-  .main-content {
+  .clients-page {
     padding-right: 10px;
     padding-left: 10px;
   }

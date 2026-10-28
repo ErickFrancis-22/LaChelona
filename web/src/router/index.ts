@@ -1,4 +1,3 @@
-
 import { createRouter, createWebHistory } from 'vue-router'
 
 const router = createRouter({
@@ -11,7 +10,7 @@ const router = createRouter({
     },
     {
       path: '/clientes',
-      name: 'clientes',
+      name: 'admin-clientes',
       component: () => import('../ClientesView.vue'),
     },
   ],
