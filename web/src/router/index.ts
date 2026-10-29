@@ -1,8 +1,8 @@
-
 import { createRouter, createWebHistory } from 'vue-router'
 import AdminLayout from '../layouts/AdminLayout.vue'
 import DashboardView from '../views/admin/DashboardView.vue'
 import LoginView from '../LoginView.vue'
+import ClientesView from '../ClientesView.vue'
 
 const PlaceholderView = {
   template: `
@@ -37,8 +37,7 @@ const routes = [
       {
         path: 'clientes',
         name: 'admin-clientes',
-        component: PlaceholderView,
-        props: { title: 'Clientes' },
+        component: ClientesView,
         meta: { title: 'Clientes' },
       },
       {
