@@ -3,6 +3,7 @@ import { IonButton, IonButtons, IonContent, IonFooter, IonHeader, IonIcon, IonSp
 import { addIcons } from 'ionicons';
 import { close, locateOutline } from 'ionicons/icons';
 import * as L from 'leaflet';
+import { PIN_ICON } from '../../utils/map-pin';
 
 export interface Coordinates {
   latitude: number;
@@ -13,14 +14,6 @@ export interface Coordinates {
 const DEFAULT_CENTER: L.LatLngTuple = [13.6769, -89.2797];
 const DEFAULT_ZOOM = 13;
 const LOCATED_ZOOM = 17;
-
-// Pin propio con divIcon: el ícono por defecto de Leaflet busca imágenes que Angular no publica
-const PIN_ICON = L.divIcon({
-  className: 'location-pin',
-  html: '<span class="location-pin__head"></span>',
-  iconSize: [32, 40],
-  iconAnchor: [16, 36], // punta de la gota rotada
-});
 
 // La columna en `clients` es decimal(10,7)
 const round = (value: number) => Number(value.toFixed(7));

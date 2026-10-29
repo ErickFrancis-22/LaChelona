@@ -1,0 +1,11 @@
+:host {
+  display: block;
+  height: 100%;
+}
+
+.preview-map {
+  width: 100%;
+  height: 100%;
+  // Los toques pasan al contenedor: la página sigue haciendo scroll y en edición el toque abre el picker
+  pointer-events: none;
+}

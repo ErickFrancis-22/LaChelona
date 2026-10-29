@@ -1,7 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { IonIcon, IonLabel, IonTabBar, IonTabButton, IonTabs } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import { clipboardOutline, homeOutline, personOutline } from 'ionicons/icons';
+import { TabBarService } from '../../services/tab-bar.service';
 
 // Contenedor de las pestañas del cliente; cada pestaña conserva su propio historial de navegación
 @Component({
@@ -11,6 +12,8 @@ import { clipboardOutline, homeOutline, personOutline } from 'ionicons/icons';
   imports: [IonTabs, IonTabBar, IonTabButton, IonIcon, IonLabel],
 })
 export class TabsPage {
+  readonly tabBar = inject(TabBarService);
+
   constructor() {
     addIcons({ clipboardOutline, homeOutline, personOutline });
   }

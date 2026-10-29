@@ -92,6 +92,40 @@
   }
 }
 
+// Control de cantidad: misma altura que el botón "+" para que la tarjeta no salte al cambiar
+.product-stepper {
+  display: flex;
+  align-items: center;
+  height: 42px;
+  border-radius: 12px;
+  background: #1e2f55;
+  color: #ffffff;
+
+  button {
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 100%;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font-size: 18px;
+  }
+
+  // Sigue activo para poder mostrar el aviso de stock, pero se ve atenuado
+  .product-stepper--max {
+    opacity: 0.45;
+  }
+}
+
+.product-quantity {
+  min-width: 18px;
+  font-size: 15px;
+  font-weight: 800;
+  text-align: center;
+}
+
 .product--unavailable .product-media,
 .product--unavailable .product-name {
   opacity: 0.6;

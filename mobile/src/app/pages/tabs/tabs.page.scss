@@ -4,6 +4,10 @@ ion-tab-bar {
   --color: #5f6675;
   --color-selected: #1e2f55;
   height: 64px;
+
+  &.tab-bar--hidden {
+    display: none;
+  }
 }
 
 ion-tab-button {

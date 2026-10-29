@@ -1,8 +1,11 @@
-<ion-footer class="ion-no-border">
-  <div class="cart-bar">
-    <button class="cart-button" type="button">
-      <span>$0.00</span>
-      <span class="cart-label">Ver carrito <ion-icon name="chevron-forward"></ion-icon></span>
-    </button>
-  </div>
-</ion-footer>
+@if (!cart.isEmpty()) {
+  <ion-footer class="ion-no-border">
+    <div class="cart-bar">
+      <!-- La navegación a la pantalla del carrito se define en su propio ticket -->
+      <button class="cart-button" type="button" [attr.aria-label]="'Ver carrito, total ' + (cart.total() | currency: 'USD' : 'symbol' : '1.2-2')">
+        <span>{{ cart.total() | currency: 'USD' : 'symbol' : '1.2-2' }}</span>
+        <span class="cart-label">Ver carrito <ion-icon name="chevron-forward"></ion-icon></span>
+      </button>
+    </div>
+  </ion-footer>
+}

@@ -1,13 +1,311 @@
-<ion-header class="ion-no-border">
-  <div class="hero">
-    <h1 class="hero-title">Perfil</h1>
-  </div>
-</ion-header>
+<ion-content class="profile-content">
+  <section class="hero">
+    @if (status() === 'ready' && !editing()) {
+      <button class="hero-edit" type="button" aria-label="Editar perfil" (click)="startEditing()">Editar</button>
+    }
 
-<ion-content class="placeholder-content">
-  <div class="placeholder">
-    <ion-icon name="person-outline"></ion-icon>
-    <h2 class="placeholder-title">Próximamente</h2>
-    <p class="placeholder-message">Aquí podrás ver y editar los datos de tu negocio.</p>
-  </div>
+    <div class="avatar" aria-hidden="true">
+      @if (initials()) {
+        {{ initials() }}
+      } @else {
+        <ion-icon name="storefront-outline"></ion-icon>
+      }
+    </div>
+
+    @if (profile(); as p) {
+      <h1 class="hero-name">{{ p.business_name }}</h1>
+      <p class="hero-user">Usuario: <strong>{{ p.username }}</strong></p>
+    } @else if (status() === 'loading') {
+      <ion-skeleton-text class="hero-skeleton hero-skeleton--name" [animated]="true"></ion-skeleton-text>
+      <ion-skeleton-text class="hero-skeleton hero-skeleton--user" [animated]="true"></ion-skeleton-text>
+    } @else {
+      <h1 class="hero-name">Mi perfil</h1>
+    }
+  </section>
+
+  @switch (status()) {
+    @case ('loading') {
+      <div class="cards">
+        @for (card of [1, 2]; track card) {
+          <section class="card">
+            <ion-skeleton-text class="skeleton-line skeleton-line--title" [animated]="true"></ion-skeleton-text>
+            @for (row of [1, 2, 3]; track row) {
+              <ion-skeleton-text class="skeleton-line" [animated]="true"></ion-skeleton-text>
+            }
+          </section>
+        }
+      </div>
+    }
+
+    @case ('error') {
+      <app-state-view
+        type="error"
+        [title]="loadError().title"
+        [message]="loadError().message"
+        (retry)="loadProfile()"
+      />
+    }
+
+    @case ('ready') {
+      @if (editing()) {
+        <form class="cards" [formGroup]="form" (ngSubmit)="save()">
+          <section class="card">
+            <h2 class="card-title">Datos del negocio</h2>
+
+            <div class="field">
+              <span class="field-label">Nombre del negocio</span>
+              <ion-input
+                aria-label="Nombre del negocio"
+                class="field-input"
+                formControlName="business_name"
+                autocapitalize="words"
+              ></ion-input>
+              @if (errorFor(form, 'business_name'); as error) {
+                <small class="field-error">{{ error }}</small>
+              }
+            </div>
+
+            <div class="field">
+              <span class="field-label">Nombre del encargado</span>
+              <ion-input
+                aria-label="Nombre del encargado"
+                class="field-input"
+                formControlName="contact_name"
+                autocomplete="name"
+                autocapitalize="words"
+              ></ion-input>
+              @if (errorFor(form, 'contact_name'); as error) {
+                <small class="field-error">{{ error }}</small>
+              }
+            </div>
+
+            <div class="field">
+              <span class="field-label">Teléfono</span>
+              <ion-input
+                aria-label="Teléfono"
+                class="field-input"
+                formControlName="phone"
+                type="tel"
+                inputmode="tel"
+                placeholder="0000-0000"
+                autocomplete="tel"
+                [maxlength]="9"
+              ></ion-input>
+              @if (errorFor(form, 'phone'); as error) {
+                <small class="field-error">{{ error }}</small>
+              }
+            </div>
+
+            <div class="field">
+              <span class="field-label">Correo</span>
+              <ion-input
+                aria-label="Correo"
+                class="field-input"
+                formControlName="email"
+                type="email"
+                inputmode="email"
+                autocomplete="email"
+                autocapitalize="off"
+              ></ion-input>
+              @if (errorFor(form, 'email'); as error) {
+                <small class="field-error">{{ error }}</small>
+              }
+            </div>
+          </section>
+
+          <section class="card">
+            <h2 class="card-title">Dirección de entrega</h2>
+
+            <div class="field">
+              <span class="field-label">Dirección</span>
+              <ion-textarea
+                aria-label="Dirección"
+                class="field-input field-textarea"
+                formControlName="address"
+                [rows]="2"
+                [autoGrow]="true"
+              ></ion-textarea>
+              @if (errorFor(form, 'address'); as error) {
+                <small class="field-error">{{ error }}</small>
+              }
+            </div>
+
+            <div class="field">
+              <span class="field-label">Punto de referencia</span>
+              <ion-input
+                aria-label="Punto de referencia"
+                class="field-input"
+                formControlName="address_reference"
+                placeholder="Ej. Frente al parque central"
+              ></ion-input>
+              @if (errorFor(form, 'address_reference'); as error) {
+                <small class="field-error">{{ error }}</small>
+              }
+            </div>
+
+            <div class="field field--last">
+              <span class="field-label">Toca el mapa para mover el pin.</span>
+              <button
+                class="map-box map-box--editable"
+                type="button"
+                aria-label="Cambiar la ubicación de entrega en el mapa"
+                (click)="mapOpen.set(true)"
+              >
+                @if (form.controls.latitude.value !== null && form.controls.longitude.value !== null) {
+                  <app-location-preview
+                    [latitude]="form.controls.latitude.value"
+                    [longitude]="form.controls.longitude.value"
+                  />
+                } @else {
+                  <span class="map-empty">Marca la ubicación de tu negocio</span>
+                }
+                <span class="map-badge">
+                  <ion-icon name="location-outline"></ion-icon>
+                  Mover pin
+                </span>
+              </button>
+              @if (errorFor(form, 'latitude'); as error) {
+                <small class="field-error">{{ error }}</small>
+              }
+            </div>
+          </section>
+
+          <!-- Permite enviar con Enter desde el teclado -->
+          <button type="submit" hidden></button>
+        </form>
+      } @else if (profile(); as p) {
+        <div class="cards">
+          <section class="card">
+            <h2 class="card-title">Datos del negocio</h2>
+            <dl class="info-list">
+              <div class="info-row">
+                <dt>Nombre del encargado</dt>
+                <dd>{{ p.contact_name }}</dd>
+              </div>
+              <div class="info-row">
+                <dt>Teléfono</dt>
+                <dd>{{ p.phone }}</dd>
+              </div>
+              <div class="info-row">
+                <dt>Correo</dt>
+                <dd>{{ p.email }}</dd>
+              </div>
+            </dl>
+          </section>
+
+          <section class="card">
+            <h2 class="card-title">Dirección de entrega</h2>
+            <p class="address">{{ p.address }}</p>
+            @if (p.address_reference) {
+              <p class="reference">Referencia: {{ p.address_reference }}</p>
+            }
+            <div class="map-box">
+              <app-location-preview [latitude]="p.latitude" [longitude]="p.longitude" />
+            </div>
+          </section>
+
+          <section class="card card--actions">
+            <button class="action" type="button" (click)="openPasswordSheet()">
+              <span class="action-icon"><ion-icon name="key-outline"></ion-icon></span>
+              <span class="action-label">Cambiar contraseña</span>
+              <ion-icon class="action-chevron" name="chevron-forward"></ion-icon>
+            </button>
+            <button class="action action--danger" type="button" (click)="confirmLogout()">
+              <span class="action-icon"><ion-icon name="log-out-outline"></ion-icon></span>
+              <span class="action-label">Cerrar sesión</span>
+            </button>
+          </section>
+        </div>
+      }
+    }
+  }
 </ion-content>
+
+@if (editing()) {
+  <ion-footer class="edit-footer ion-no-border">
+    <ion-button class="btn-secondary" fill="outline" (click)="cancelEditing()">Cancelar</ion-button>
+    <ion-button class="btn-primary" [disabled]="saving()" (click)="save()">Guardar cambios</ion-button>
+  </ion-footer>
+}
+
+<ion-modal [isOpen]="mapOpen()" (didDismiss)="mapOpen.set(false)">
+  <ng-template>
+    <app-location-picker
+      [latitude]="form.controls.latitude.value"
+      [longitude]="form.controls.longitude.value"
+      (confirmed)="onLocationConfirmed($event)"
+      (cancelled)="mapOpen.set(false)"
+    ></app-location-picker>
+  </ng-template>
+</ion-modal>
+
+<ion-modal
+  class="password-sheet"
+  [isOpen]="passwordOpen()"
+  [initialBreakpoint]="1"
+  [breakpoints]="[0, 1]"
+  [handle]="true"
+  (didDismiss)="passwordOpen.set(false)"
+>
+  <ng-template>
+    <div class="ion-page">
+      <form class="sheet" [formGroup]="passwordForm" (ngSubmit)="changePassword()">
+        <h2 class="sheet-title">Cambiar contraseña</h2>
+
+        <div class="field">
+          <span class="field-label">Contraseña actual</span>
+          <ion-input
+            aria-label="Contraseña actual"
+            class="field-input"
+            formControlName="current_password"
+            type="password"
+            autocomplete="current-password"
+          >
+            <ion-input-password-toggle slot="end"></ion-input-password-toggle>
+          </ion-input>
+          @if (errorFor(passwordForm, 'current_password'); as error) {
+            <small class="field-error">{{ error }}</small>
+          }
+        </div>
+
+        <div class="field">
+          <span class="field-label">Nueva contraseña</span>
+          <ion-input
+            aria-label="Nueva contraseña"
+            class="field-input"
+            formControlName="new_password"
+            type="password"
+            placeholder="Mínimo 8 caracteres"
+            autocomplete="new-password"
+          >
+            <ion-input-password-toggle slot="end"></ion-input-password-toggle>
+          </ion-input>
+          @if (errorFor(passwordForm, 'new_password'); as error) {
+            <small class="field-error">{{ error }}</small>
+          }
+        </div>
+
+        <div class="field">
+          <span class="field-label">Confirmar nueva contraseña</span>
+          <ion-input
+            aria-label="Confirmar nueva contraseña"
+            class="field-input"
+            formControlName="new_password_confirmation"
+            type="password"
+            autocomplete="new-password"
+          >
+            <ion-input-password-toggle slot="end"></ion-input-password-toggle>
+          </ion-input>
+          @if (errorFor(passwordForm, 'new_password_confirmation'); as error) {
+            <small class="field-error">{{ error }}</small>
+          }
+        </div>
+
+        <ion-button class="btn-primary btn-block" type="submit" expand="block" [disabled]="changingPassword()">
+          Guardar contraseña
+        </ion-button>
+        <button class="btn-link" type="button" (click)="passwordOpen.set(false)">Cancelar</button>
+      </form>
+    </div>
+  </ng-template>
+</ion-modal>
