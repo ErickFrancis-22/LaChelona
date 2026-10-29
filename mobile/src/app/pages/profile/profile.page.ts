@@ -18,7 +18,16 @@ import {
   ToastController,
 } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { checkmarkCircle, chevronForward, keyOutline, locationOutline, logOutOutline, storefrontOutline } from 'ionicons/icons';
+import {
+  checkmarkCircle,
+  chevronForward,
+  eye,
+  eyeOff,
+  keyOutline,
+  locationOutline,
+  logOutOutline,
+  storefrontOutline,
+} from 'ionicons/icons';
 import { Profile, UpdateProfileRequest } from '../../models/profile.model';
 import { AuthService } from '../../services/auth.service';
 import { ProfileService } from '../../services/profile.service';
@@ -129,7 +138,7 @@ export class ProfilePage implements OnDestroy {
   });
 
   constructor() {
-    addIcons({ checkmarkCircle, chevronForward, keyOutline, locationOutline, logOutOutline, storefrontOutline });
+    addIcons({ checkmarkCircle, chevronForward, eye, eyeOff, keyOutline, locationOutline, logOutOutline, storefrontOutline });
 
     // Cada validador compara contra otro campo: se revalidan cuando ese campo cambia
     const destroyRef = inject(DestroyRef);

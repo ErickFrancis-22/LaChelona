@@ -11,7 +11,8 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   // Accept JSON evita que Laravel intente redirigir a una ruta "login" web al responder 401
   const headers: Record<string, string> = { Accept: 'application/json' };
-  if (token) {
+  // Si la petición ya trae su propio token (p. ej. revocar el de un ADMIN en el login) no se reemplaza
+  if (token && !req.headers.has('Authorization')) {
     headers['Authorization'] = `Bearer ${token}`;
   }
 

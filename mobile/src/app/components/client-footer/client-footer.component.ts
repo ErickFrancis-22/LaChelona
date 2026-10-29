@@ -1,5 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { CurrencyPipe } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { IonFooter, IonIcon } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import { chevronForward } from 'ionicons/icons';
@@ -10,7 +11,7 @@ import { CartService } from '../../services/cart.service';
   selector: 'app-client-footer',
   templateUrl: './client-footer.component.html',
   styleUrls: ['./client-footer.component.scss'],
-  imports: [CurrencyPipe, IonFooter, IonIcon],
+  imports: [CurrencyPipe, RouterLink, IonFooter, IonIcon],
 })
 export class ClientFooterComponent {
   readonly cart = inject(CartService);

@@ -75,8 +75,9 @@ export class CartService {
   }
 
   // Actualiza precio, stock y disponibilidad con datos frescos de la API. Ajusta las cantidades que ya no alcanzan
-  // y quita los productos agotados; solo toca los productos que vienen en la respuesta
-  syncProducts(products: Product[]): void {
+  // y quita los productos agotados. Por defecto solo toca los productos que vienen en la respuesta (una categoría o
+  // búsqueda); con `complete` la lista es el catálogo entero y lo que falta se quita porque ya no está activo
+  syncProducts(products: Product[], complete = false): void {
     const fresh = new Map(products.map((product) => [product.id, product]));
     const removed: string[] = [];
     const adjusted: string[] = [];
@@ -84,12 +85,12 @@ export class CartService {
 
     const items = this.items().flatMap((item) => {
       const product = fresh.get(item.product.id);
-      if (!product) {
+      if (!product && !complete) {
         return [item];
       }
       synced = true;
-      if (!product.available || product.stock < 1) {
-        removed.push(product.name);
+      if (!product || !product.available || product.stock < 1) {
+        removed.push(item.product.name);
         return [];
       }
       if (item.quantity > product.stock) {
@@ -103,7 +104,8 @@ export class CartService {
     }
 
     if (removed.length) {
-      this.warn(`Quitamos del carrito ${removed.join(', ')} porque ya no hay existencias.`);
+      const verb = removed.length === 1 ? 'está disponible' : 'están disponibles';
+      this.warn(`Quitamos del carrito ${removed.join(', ')} porque ya no ${verb}.`);
     } else if (adjusted.length) {
       this.warn(`Ajustamos la cantidad de ${adjusted.join(', ')} al stock disponible.`);
     }

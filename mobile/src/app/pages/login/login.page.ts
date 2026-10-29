@@ -12,7 +12,9 @@ import {
   IonText,
   LoadingController,
 } from '@ionic/angular';
-import { AuthService } from '../../services/auth.service';
+import { addIcons } from 'ionicons';
+import { eye, eyeOff } from 'ionicons/icons';
+import { AuthService, RoleNotAllowedError } from '../../services/auth.service';
 
 @Component({
   selector: 'app-login',
@@ -32,6 +34,10 @@ export class LoginPage {
     password: ['', Validators.required],
   });
 
+  constructor() {
+    addIcons({ eye, eyeOff });
+  }
+
   async onSubmit(): Promise<void> {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
@@ -47,18 +53,21 @@ export class LoginPage {
         this.form.reset();
         this.router.navigateByUrl('/tabs/catalog', { replaceUrl: true });
       },
-      error: async (err: HttpErrorResponse) => {
+      error: async (err: HttpErrorResponse | RoleNotAllowedError) => {
         await loading.dismiss();
         await this.showError(err);
       },
     });
   }
 
-  private async showError(err: HttpErrorResponse): Promise<void> {
+  private async showError(err: HttpErrorResponse | RoleNotAllowedError): Promise<void> {
     let header = 'Error';
     let message = 'Ocurrió un error inesperado. Intenta de nuevo.';
 
-    if (err.status === 401) {
+    if (err instanceof RoleNotAllowedError) {
+      header = 'Acceso no permitido';
+      message = 'Esta aplicación es solo para clientes. Los administradores deben usar el panel web.';
+    } else if (err.status === 401) {
       header = 'Credenciales inválidas';
       message = 'Usuario o contraseña incorrectos.';
     } else if (err.status === 403) {

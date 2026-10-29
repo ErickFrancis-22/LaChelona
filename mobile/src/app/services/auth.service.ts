@@ -1,5 +1,6 @@
 import { Injectable, inject } from '@angular/core';
-import { Observable, catchError, finalize, map, of, switchMap, tap } from 'rxjs';
+import { HttpHeaders } from '@angular/common/http';
+import { Observable, catchError, finalize, map, of, switchMap, tap, throwError } from 'rxjs';
 import { ApiService } from './api.service';
 import { CartService } from './cart.service';
 import { ProfileResponse } from '../models/profile.model';
@@ -56,6 +57,14 @@ export interface RegisterResponse {
   };
 }
 
+// El backend autentica a cualquier rol; la app móvil solo admite CLIENT
+export class RoleNotAllowedError extends Error {
+  constructor() {
+    super('Esta aplicación es solo para clientes.');
+    this.name = 'RoleNotAllowedError';
+  }
+}
+
 const TOKEN_KEY = 'auth_token';
 const USER_NAME_KEY = 'auth_user_name';
 const BUSINESS_NAME_KEY = 'auth_business_name';
@@ -66,9 +75,11 @@ export class AuthService {
   private readonly cart = inject(CartService);
 
   // El login no trae el nombre del negocio: se pide a GET profile para mostrarlo en "Entregar en".
-  // Si esa consulta falla la sesión sigue igual y el catálogo usa el nombre del encargado
+  // Si esa consulta falla la sesión sigue igual y el catálogo usa el nombre del encargado.
+  // Un usuario que no es CLIENT no inicia sesión: su token se revoca y nunca se guarda
   login(credentials: LoginRequest): Observable<LoginResponse> {
     return this.api.post<LoginResponse>('auth/login', credentials).pipe(
+      switchMap((res) => (res.user.role === 'CLIENT' ? of(res) : this.rejectRole(res.token))),
       tap((res) => {
         this.saveToken(res.token);
         localStorage.setItem(USER_NAME_KEY, res.user.name);
@@ -80,6 +91,14 @@ export class AuthService {
           map(() => res),
         ),
       ),
+    );
+  }
+
+  private rejectRole(token: string): Observable<never> {
+    const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
+    return this.api.post<unknown>('auth/logout', {}, headers).pipe(
+      catchError(() => of(null)),
+      switchMap(() => throwError(() => new RoleNotAllowedError())),
     );
   }
 
