@@ -19,7 +19,7 @@ import {
   LoadingController,
 } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { checkmarkCircle, chevronBack, chevronForward, locationOutline } from 'ionicons/icons';
+import { checkmarkCircle, chevronBack, chevronForward, eye, eyeOff, locationOutline } from 'ionicons/icons';
 import { AuthService, RegisterRequest } from '../../services/auth.service';
 import { Coordinates, LocationPickerComponent } from '../../components/location-picker/location-picker.component';
 import { RegisterSuccessComponent } from '../../components/register-success/register-success.component';
@@ -125,7 +125,7 @@ export class RegisterPage {
   });
 
   constructor() {
-    addIcons({ chevronBack, chevronForward, locationOutline, checkmarkCircle });
+    addIcons({ chevronBack, chevronForward, locationOutline, checkmarkCircle, eye, eyeOff });
 
     // La confirmación depende de la contraseña: se revalida cuando esta cambia
     this.form.controls.password.valueChanges

@@ -183,7 +183,7 @@
               placeholder="Mínimo 8 caracteres"
               autocomplete="new-password"
             >
-              <ion-input-password-toggle slot="end"></ion-input-password-toggle>
+              <ion-input-password-toggle slot="end" showIcon="eye-off" hideIcon="eye"></ion-input-password-toggle>
             </ion-input>
             @if (errorFor('password'); as error) {
               <small class="field-error">{{ error }}</small>
@@ -200,7 +200,7 @@
               placeholder="Escríbela de nuevo"
               autocomplete="new-password"
             >
-              <ion-input-password-toggle slot="end"></ion-input-password-toggle>
+              <ion-input-password-toggle slot="end" showIcon="eye-off" hideIcon="eye"></ion-input-password-toggle>
             </ion-input>
             @if (errorFor('password_confirmation'); as error) {
               <small class="field-error">{{ error }}</small>

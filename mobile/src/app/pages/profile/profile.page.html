@@ -261,7 +261,7 @@
             type="password"
             autocomplete="current-password"
           >
-            <ion-input-password-toggle slot="end"></ion-input-password-toggle>
+            <ion-input-password-toggle slot="end" showIcon="eye-off" hideIcon="eye"></ion-input-password-toggle>
           </ion-input>
           @if (errorFor(passwordForm, 'current_password'); as error) {
             <small class="field-error">{{ error }}</small>
@@ -278,7 +278,7 @@
             placeholder="Mínimo 8 caracteres"
             autocomplete="new-password"
           >
-            <ion-input-password-toggle slot="end"></ion-input-password-toggle>
+            <ion-input-password-toggle slot="end" showIcon="eye-off" hideIcon="eye"></ion-input-password-toggle>
           </ion-input>
           @if (errorFor(passwordForm, 'new_password'); as error) {
             <small class="field-error">{{ error }}</small>
@@ -294,7 +294,7 @@
             type="password"
             autocomplete="new-password"
           >
-            <ion-input-password-toggle slot="end"></ion-input-password-toggle>
+            <ion-input-password-toggle slot="end" showIcon="eye-off" hideIcon="eye"></ion-input-password-toggle>
           </ion-input>
           @if (errorFor(passwordForm, 'new_password_confirmation'); as error) {
             <small class="field-error">{{ error }}</small>

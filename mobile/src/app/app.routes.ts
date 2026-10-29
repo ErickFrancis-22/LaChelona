@@ -1,12 +1,15 @@
 import { Routes } from '@angular/router';
+import { authGuard, guestGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
   {
     path: 'login',
+    canActivate: [guestGuard],
     loadComponent: () => import('./pages/login/login.page').then((m) => m.LoginPage),
   },
   {
     path: 'register',
+    canActivate: [guestGuard],
     loadComponent: () => import('./pages/register/register.page').then((m) => m.RegisterPage),
   },
   {
@@ -16,6 +19,7 @@ export const routes: Routes = [
   // Pestañas del cliente: ion-tabs necesita un prefijo propio (/tabs/<pestaña>) para armar sus rutas
   {
     path: 'tabs',
+    canActivate: [authGuard],
     loadComponent: () => import('./pages/tabs/tabs.page').then((m) => m.TabsPage),
     children: [
       {
@@ -46,6 +50,12 @@ export const routes: Routes = [
         pathMatch: 'full',
       },
     ],
+  },
+  // Carrito fuera de las pestañas: el diseño de "Tu pedido" no lleva la barra inferior
+  {
+    path: 'cart',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/cart/cart.page').then((m) => m.CartPage),
   },
   // Agregar aquí las futuras páginas del proyecto
   {
