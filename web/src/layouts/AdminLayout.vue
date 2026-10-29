@@ -7,10 +7,10 @@
       <!-- Logo y nombre -->
       <div class="brand">
         <img
-          src="/logo-chelonapp.png"
-          alt="Logo La Chelona App"
-          class="brand-logo"
-        />
+  src="/logo-chelonapp-oscuro.png"
+  alt="Logo La Chelona App"
+  class="brand-logo"
+/>
       </div>
 
       <!-- Menú de navegación -->

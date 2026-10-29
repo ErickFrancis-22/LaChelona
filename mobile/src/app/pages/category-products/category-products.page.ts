@@ -5,6 +5,7 @@ import { addIcons } from 'ionicons';
 import { chevronBack } from 'ionicons/icons';
 import { EMPTY, Subject, catchError, debounceTime, map, of, switchMap, tap } from 'rxjs';
 import { Product } from '../../models/product.model';
+import { CartService } from '../../services/cart.service';
 import { CategoryService } from '../../services/category.service';
 import { ProductService } from '../../services/product.service';
 import { ClientFooterComponent } from '../../components/client-footer/client-footer.component';
@@ -32,6 +33,8 @@ type LoadStatus = 'loading' | 'ready' | 'error';
 export class CategoryProductsPage implements OnInit {
   private readonly categoryService = inject(CategoryService);
   private readonly productService = inject(ProductService);
+  // Cada carga refresca precio y stock de los productos que ya están en el carrito
+  private readonly cart = inject(CartService);
   private readonly navCtrl = inject(NavController);
   private readonly search$ = new Subject<string>();
 
@@ -59,6 +62,7 @@ export class CategoryProductsPage implements OnInit {
         switchMap((term) =>
           this.productService.getProducts({ categoryId: Number(this.categoryId()), search: term }).pipe(
             tap((products) => {
+              this.cart.syncProducts(products);
               this.products.set(products);
               this.status.set('ready');
             }),
@@ -102,6 +106,7 @@ export class CategoryProductsPage implements OnInit {
         next: ({ products, name }) => {
           this.categoryName.set(name);
           this.categoryFound.set(!!name);
+          this.cart.syncProducts(products);
           this.products.set(products);
           this.status.set('ready');
         },

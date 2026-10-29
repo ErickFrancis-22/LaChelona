@@ -1,6 +1,6 @@
 <article class="product" [class.product--unavailable]="!product().available">
   <div class="product-media" [style.background]="mediaColor()">
-    @if (product().image_url && !imageFailed()) {
+    @if (showImage()) {
       <img [src]="product().image_url" [alt]="product().name" loading="lazy" (error)="imageFailed.set(true)" />
     } @else {
       <ion-icon name="image-outline"></ion-icon>
@@ -15,14 +15,31 @@
 
   <div class="product-footer">
     <span class="product-price">{{ product().sale_price | currency: 'USD' : 'symbol' : '1.2-2' }}</span>
-    <!-- La lógica de agregar al carrito se implementa en su propio ticket -->
-    <button
-      class="product-add"
-      type="button"
-      [disabled]="!product().available"
-      [attr.aria-label]="'Agregar ' + product().name"
-    >
-      <ion-icon name="add"></ion-icon>
-    </button>
+    @if (quantity() > 0) {
+      <div class="product-stepper" role="group" [attr.aria-label]="'Cantidad de ' + product().name">
+        <button type="button" [attr.aria-label]="'Quitar uno de ' + product().name" (click)="cart.decrease(product())">
+          <ion-icon name="remove"></ion-icon>
+        </button>
+        <span class="product-quantity" aria-live="polite">{{ quantity() }}</span>
+        <button
+          type="button"
+          [class.product-stepper--max]="quantity() >= product().stock"
+          [attr.aria-label]="'Agregar uno más de ' + product().name"
+          (click)="cart.increase(product())"
+        >
+          <ion-icon name="add"></ion-icon>
+        </button>
+      </div>
+    } @else {
+      <button
+        class="product-add"
+        type="button"
+        [disabled]="!canAdd()"
+        [attr.aria-label]="'Agregar ' + product().name"
+        (click)="cart.add(product())"
+      >
+        <ion-icon name="add"></ion-icon>
+      </button>
+    }
   </div>
 </article>

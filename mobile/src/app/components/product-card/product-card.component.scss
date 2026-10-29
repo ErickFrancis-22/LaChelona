@@ -17,19 +17,20 @@
   display: grid;
   place-items: center;
   flex-shrink: 0;
-  height: 100px;
+  height: 130px;
   overflow: hidden;
   border-radius: 12px;
   color: rgba(30, 47, 85, 0.35);
   font-size: 30px;
 
-  // Fuera del flujo del grid: la imagen nunca crece más que el recuadro ni tapa el nombre
+  // Fuera del flujo del grid: la imagen nunca crece más que el recuadro ni tapa el nombre.
+  // `contain` muestra la imagen completa en lugar de recortarla
   img {
     position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+    inset: 6px;
+    width: calc(100% - 12px);
+    height: calc(100% - 12px);
+    object-fit: contain;
   }
 }
 
@@ -89,6 +90,40 @@
     background: #e6e8ee;
     color: #8a909c;
   }
+}
+
+// Control de cantidad: misma altura que el botón "+" para que la tarjeta no salte al cambiar
+.product-stepper {
+  display: flex;
+  align-items: center;
+  height: 42px;
+  border-radius: 12px;
+  background: #1e2f55;
+  color: #ffffff;
+
+  button {
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 100%;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font-size: 18px;
+  }
+
+  // Sigue activo para poder mostrar el aviso de stock, pero se ve atenuado
+  .product-stepper--max {
+    opacity: 0.45;
+  }
+}
+
+.product-quantity {
+  min-width: 18px;
+  font-size: 15px;
+  font-weight: 800;
+  text-align: center;
 }
 
 .product--unavailable .product-media,

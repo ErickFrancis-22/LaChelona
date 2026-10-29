@@ -1,0 +1,246 @@
+@if (registered(); as account) {
+  <app-register-success
+    [businessName]="account.businessName"
+    [username]="account.username"
+    (continue)="continueAfterRegister()"
+  ></app-register-success>
+} @else {
+  <ion-header class="register-header ion-no-border">
+    <div class="header-top">
+      <button class="back-button" type="button" (click)="goBack()" aria-label="Volver">
+        <ion-icon name="chevron-back"></ion-icon>
+      </button>
+      <span class="header-title">Registrar mi negocio</span>
+      <span class="header-step">Paso {{ pasoActual() }} de {{ totalSteps }}</span>
+    </div>
+
+    <div class="progress" role="progressbar" aria-valuemin="1" [attr.aria-valuemax]="totalSteps" [attr.aria-valuenow]="pasoActual()">
+      @for (step of steps; track step) {
+        <span class="progress-bar" [class.progress-bar--done]="step <= pasoActual()"></span>
+      }
+    </div>
+
+    <h1 class="step-title">{{ stepTexts[pasoActual()].title }}</h1>
+    <p class="step-subtitle">{{ stepTexts[pasoActual()].subtitle }}</p>
+  </ion-header>
+
+  <ion-content class="register-content">
+    <form class="register-form" [formGroup]="form" (ngSubmit)="next()">
+      @switch (pasoActual()) {
+        @case (1) {
+          <div class="field">
+            <span class="field-label">Nombre del negocio</span>
+            <ion-input
+              aria-label="Nombre del negocio"
+              class="field-input"
+              formControlName="business_name"
+              placeholder="Ej. Minisúper El Roble"
+              autocapitalize="words"
+            ></ion-input>
+            @if (errorFor('business_name'); as error) {
+              <small class="field-error">{{ error }}</small>
+            }
+          </div>
+
+          <div class="field">
+            <span class="field-label">Nombre del encargado</span>
+            <ion-input
+              aria-label="Nombre del encargado"
+              class="field-input"
+              formControlName="name"
+              placeholder="Nombre y apellido"
+              autocomplete="name"
+              autocapitalize="words"
+            ></ion-input>
+            @if (errorFor('name'); as error) {
+              <small class="field-error">{{ error }}</small>
+            }
+          </div>
+
+          <div class="field">
+            <span class="field-label">Teléfono</span>
+            <ion-input
+              aria-label="Teléfono"
+              class="field-input"
+              formControlName="contact_phone"
+              type="tel"
+              inputmode="tel"
+              placeholder="0000-0000"
+              autocomplete="tel"
+              [maxlength]="9"
+            ></ion-input>
+            @if (errorFor('contact_phone'); as error) {
+              <small class="field-error">{{ error }}</small>
+            } @else {
+              <small class="field-hint">Te llamaremos a este número si hay algún detalle con tu pedido.</small>
+            }
+          </div>
+
+          <div class="field">
+            <span class="field-label">Correo electrónico</span>
+            <ion-input
+              aria-label="Correo electrónico"
+              class="field-input"
+              formControlName="email"
+              type="email"
+              inputmode="email"
+              placeholder="tunegocio@correo.com"
+              autocomplete="email"
+              autocapitalize="off"
+            ></ion-input>
+            @if (errorFor('email'); as error) {
+              <small class="field-error">{{ error }}</small>
+            } @else {
+              <small class="field-hint">Solo para contactarte. No lo usarás para iniciar sesión.</small>
+            }
+          </div>
+        }
+
+        @case (2) {
+          <div class="field">
+            <span class="field-label">Dirección</span>
+            <ion-textarea
+              aria-label="Dirección"
+              class="field-input field-textarea"
+              formControlName="address"
+              placeholder="Calle, número de casa o local, colonia y municipio"
+              [rows]="3"
+              [autoGrow]="true"
+            ></ion-textarea>
+            @if (errorFor('address'); as error) {
+              <small class="field-error">{{ error }}</small>
+            } @else {
+              <small class="field-hint">Ej. Calle El Progreso #24, Col. Las Delicias, Santa Tecla</small>
+            }
+          </div>
+
+          <div class="field">
+            <span class="field-label">Punto de referencia</span>
+            <ion-input
+              aria-label="Punto de referencia"
+              class="field-input"
+              formControlName="address_reference"
+              placeholder="Ej. Frente al parque central"
+            ></ion-input>
+            @if (errorFor('address_reference'); as error) {
+              <small class="field-error">{{ error }}</small>
+            } @else {
+              <small class="field-hint">Ayuda al repartidor a encontrarte más rápido.</small>
+            }
+          </div>
+
+          <button
+            class="location-button"
+            type="button"
+            [class.location-button--set]="hasLocation"
+            [class.location-button--error]="!!errorFor('latitude')"
+            (click)="mapOpen.set(true)"
+          >
+            <span class="location-icon">
+              <ion-icon [name]="hasLocation ? 'checkmark-circle' : 'location-outline'"></ion-icon>
+            </span>
+            <span class="location-text">
+              @if (hasLocation) {
+                <strong>Ubicación marcada</strong>
+                <small>Toca para cambiarla en el mapa</small>
+              } @else {
+                <strong>Marcar ubicación en el mapa</strong>
+                <small>Obligatorio · usa tu ubicación actual</small>
+              }
+            </span>
+            <ion-icon class="location-chevron" name="chevron-forward"></ion-icon>
+          </button>
+          @if (errorFor('latitude'); as error) {
+            <small class="field-error">{{ error }}</small>
+          }
+        }
+
+        @case (3) {
+          <div class="field">
+            <span class="field-label">Usuario</span>
+            <ion-input
+              aria-label="Usuario"
+              class="field-input"
+              formControlName="username"
+              placeholder="Ej. minisuper.elroble"
+              autocomplete="username"
+              autocapitalize="off"
+            ></ion-input>
+            @if (errorFor('username'); as error) {
+              <small class="field-error">{{ error }}</small>
+            } @else {
+              <small class="field-hint">Sin espacios. Puedes usar letras, números y punto.</small>
+            }
+          </div>
+
+          <div class="field">
+            <span class="field-label">Contraseña</span>
+            <ion-input
+              aria-label="Contraseña"
+              class="field-input"
+              formControlName="password"
+              type="password"
+              placeholder="Mínimo 8 caracteres"
+              autocomplete="new-password"
+            >
+              <ion-input-password-toggle slot="end"></ion-input-password-toggle>
+            </ion-input>
+            @if (errorFor('password'); as error) {
+              <small class="field-error">{{ error }}</small>
+            }
+          </div>
+
+          <div class="field">
+            <span class="field-label">Confirmar contraseña</span>
+            <ion-input
+              aria-label="Confirmar contraseña"
+              class="field-input"
+              formControlName="password_confirmation"
+              type="password"
+              placeholder="Escríbela de nuevo"
+              autocomplete="new-password"
+            >
+              <ion-input-password-toggle slot="end"></ion-input-password-toggle>
+            </ion-input>
+            @if (errorFor('password_confirmation'); as error) {
+              <small class="field-error">{{ error }}</small>
+            }
+          </div>
+
+          <ul class="password-rules">
+            <li [class.met]="form.controls.password.value.length >= 8">Al menos 8 caracteres</li>
+          </ul>
+
+          <ion-checkbox class="terms" formControlName="terms" labelPlacement="end" justify="start">
+            <span class="terms-text">
+              Acepto los <strong>Términos y condiciones</strong> y el <strong>Aviso de privacidad</strong>.
+            </span>
+          </ion-checkbox>
+          @if (errorFor('terms'); as error) {
+            <small class="field-error">{{ error }}</small>
+          }
+        }
+      }
+
+      <!-- Permite enviar con Enter desde el teclado -->
+      <button type="submit" hidden></button>
+    </form>
+  </ion-content>
+
+  <ion-footer class="register-footer ion-no-border">
+    <ion-button class="btn-primary" expand="block" [disabled]="submitting()" (click)="next()">
+      {{ pasoActual() < totalSteps ? 'Continuar' : 'Crear cuenta' }}
+    </ion-button>
+  </ion-footer>
+
+  <ion-modal [isOpen]="mapOpen()" (didDismiss)="mapOpen.set(false)">
+    <ng-template>
+      <app-location-picker
+        [latitude]="form.controls.latitude.value"
+        [longitude]="form.controls.longitude.value"
+        (confirmed)="onLocationConfirmed($event)"
+        (cancelled)="mapOpen.set(false)"
+      ></app-location-picker>
+    </ng-template>
+  </ion-modal>
+}
