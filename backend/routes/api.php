@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\AdminClientController;
 use App\Http\Controllers\Api\AdminProductController;
 use App\Http\Controllers\Api\AdminInventoryController;
 use App\Http\Controllers\Api\AdminOrderController;
+use App\Http\Controllers\Api\AdminInvoiceController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/health', function () {
@@ -69,6 +70,8 @@ Route::prefix('admin')
         Route::patch('/orders/{id}/in-transit', [AdminOrderController::class, 'markInTransit']);
         Route::patch('/orders/{id}/deliver', [AdminOrderController::class, 'deliver']);
 
-        // TT34, TT35, TT36...
+    //Comprobantes
+        Route::post('/orders/{id}/invoice', [AdminInvoiceController::class, 'store']);
+        Route::get('/orders/{id}/invoice', [AdminInvoiceController::class, 'show']);
     });
     
