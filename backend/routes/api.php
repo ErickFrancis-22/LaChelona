@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\AdminProductController;
 use App\Http\Controllers\Api\AdminInventoryController;
 use App\Http\Controllers\Api\AdminOrderController;
 use App\Http\Controllers\Api\AdminInvoiceController;
+use App\Http\Controllers\Api\AdminReportController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/health', function () {
@@ -73,5 +74,8 @@ Route::prefix('admin')
     //Comprobantes
         Route::post('/orders/{id}/invoice', [AdminInvoiceController::class, 'store']);
         Route::get('/orders/{id}/invoice', [AdminInvoiceController::class, 'show']);
+
+    //Reportes mensuales
+        Route::get('/reports/monthly', [AdminReportController::class, 'monthly']);
     });
     
