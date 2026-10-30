@@ -1,13 +1,118 @@
 <ion-header class="ion-no-border">
-  <div class="hero">
-    <h1 class="hero-title">Mis pedidos</h1>
+  <div class="header">
+    <h1 class="header-title">Mis pedidos</h1>
   </div>
 </ion-header>
 
-<ion-content class="placeholder-content">
-  <div class="placeholder">
-    <ion-icon name="clipboard-outline"></ion-icon>
-    <h2 class="placeholder-title">Próximamente</h2>
-    <p class="placeholder-message">Aquí podrás ver el estado de tus pedidos.</p>
-  </div>
+<ion-content class="orders-content">
+  <ion-refresher slot="fixed" (ionRefresh)="onRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  @switch (status()) {
+    @case ('loading') {
+      <p class="section-label">En curso</p>
+      <div class="current current--skeleton" aria-hidden="true">
+        <ion-skeleton-text class="skeleton-line skeleton-line--short" [animated]="true"></ion-skeleton-text>
+        <ion-skeleton-text class="skeleton-line skeleton-line--title" [animated]="true"></ion-skeleton-text>
+        <ion-skeleton-text class="skeleton-line" [animated]="true"></ion-skeleton-text>
+        @for (item of [1, 2, 3, 4]; track item) {
+          <div class="skeleton-step">
+            <ion-skeleton-text class="skeleton-dot" [animated]="true"></ion-skeleton-text>
+            <ion-skeleton-text class="skeleton-line skeleton-line--short" [animated]="true"></ion-skeleton-text>
+          </div>
+        }
+        <ion-skeleton-text class="skeleton-button" [animated]="true"></ion-skeleton-text>
+      </div>
+
+      <h2 class="history-title">Historial</h2>
+      <div class="history-list" aria-hidden="true">
+        @for (item of skeletons; track item) {
+          <div class="skeleton-card">
+            <ion-skeleton-text class="skeleton-line skeleton-line--card" [animated]="true"></ion-skeleton-text>
+            <ion-skeleton-text class="skeleton-line skeleton-line--short" [animated]="true"></ion-skeleton-text>
+          </div>
+        }
+      </div>
+    }
+
+    @case ('error') {
+      <app-state-view
+        type="error"
+        title="No pudimos cargar tus pedidos"
+        message="Revisa tu conexión e intenta de nuevo."
+        (retry)="load()"
+      />
+    }
+
+    @default {
+      <p class="section-label">En curso</p>
+      <!-- La tarjeta azul siempre se muestra: con el pedido activo más reciente o con la invitación a pedir -->
+      <section class="current" aria-label="Pedido en curso">
+        @if (current(); as order) {
+          <div class="current-top">
+            <p class="current-caption">Pedido en curso · {{ formatOrderNumber(order.id) }}</p>
+            <span class="current-total">{{ order.total | currency: 'USD' : 'symbol' : '1.2-2' }}</span>
+          </div>
+          <h2 class="current-status">{{ statusLabels[order.status] }}</h2>
+          <p class="current-message">{{ statusMessages[order.status] }}</p>
+
+          <app-order-timeline class="current-timeline" [order]="order" />
+
+          @if (isPending(order.status)) {
+            <button class="primary-button" type="button" (click)="comingSoon()">
+              <ion-icon name="create-outline" aria-hidden="true"></ion-icon>
+              Editar pedido
+            </button>
+            <button class="outline-button" type="button" (click)="comingSoon()">Cancelar pedido</button>
+            <p class="current-note">Puedes editarlo o cancelarlo hasta que el distribuidor lo confirme.</p>
+          } @else {
+            <button class="primary-button" type="button" (click)="openDetail(order)">Ver detalle del pedido</button>
+          }
+        } @else {
+          <div class="current-empty">
+            <div class="current-empty-icon">
+              <ion-icon name="clipboard-outline" aria-hidden="true"></ion-icon>
+            </div>
+            <h2 class="current-empty-title">No tienes ningún pedido en curso</h2>
+            <p class="current-message">Cuando hagas un pedido podrás seguir su estado aquí.</p>
+          </div>
+          <button class="primary-button" type="button" (click)="goToCatalog()">Realiza uno</button>
+        }
+      </section>
+
+      <h2 class="history-title">Historial</h2>
+
+      <!-- Sin historial no hay nada que filtrar -->
+      @if (history().length > 0) {
+        <div class="filters" role="group" aria-label="Filtrar historial">
+          @for (item of filters; track item.value) {
+            <button
+              class="filter"
+              type="button"
+              [class.filter--active]="filter() === item.value"
+              [attr.aria-pressed]="filter() === item.value"
+              (click)="setFilter(item.value)"
+            >
+              {{ item.label }}
+            </button>
+          }
+        </div>
+      }
+
+      @if (filteredHistory().length === 0) {
+        <p class="history-empty">{{ emptyHistoryMessage() }}</p>
+      } @else {
+        <div class="history-list">
+          @for (order of visibleHistory(); track order.id) {
+            <app-order-card [order]="order" (open)="openDetail(order)" />
+          }
+        </div>
+
+        @if (hasMore()) {
+          <button class="more-button" type="button" (click)="showMore()">Ver más pedidos</button>
+        }
+      }
+    }
+  }
 </ion-content>

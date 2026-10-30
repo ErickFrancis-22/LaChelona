@@ -57,6 +57,12 @@ export const routes: Routes = [
     canActivate: [authGuard],
     loadComponent: () => import('./pages/cart/cart.page').then((m) => m.CartPage),
   },
+  // Detalle de un pedido: fuera de las pestañas, como el carrito, porque el diseño no lleva la barra inferior
+  {
+    path: 'orders/:id',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/order-detail/order-detail.page').then((m) => m.OrderDetailPage),
+  },
   // Agregar aquí las futuras páginas del proyecto
   {
     path: '',

@@ -1,0 +1,8 @@
+<button class="order-card" type="button" [attr.aria-label]="'Ver detalle del pedido ' + title()" (click)="open.emit()">
+  <div class="order-card-header">
+    <h3 class="order-card-title">{{ title() }}</h3>
+    <app-order-status-badge [status]="order().status" />
+    <ion-icon name="chevron-forward" aria-hidden="true"></ion-icon>
+  </div>
+  <span class="order-card-total">{{ order().total | currency: 'USD' : 'symbol' : '1.2-2' }}</span>
+</button>
