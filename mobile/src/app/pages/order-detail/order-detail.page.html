@@ -1,0 +1,135 @@
+<ion-header class="ion-no-border">
+  <div class="header">
+    <button class="back-button" type="button" aria-label="Volver a mis pedidos" (click)="goBack()">
+      <ion-icon name="chevron-back"></ion-icon>
+    </button>
+    <div class="header-text">
+      <p class="header-caption">Detalle del pedido</p>
+      <h1 class="header-title">{{ title() }}</h1>
+    </div>
+    @if (status() === 'ready' && order(); as current) {
+      <app-order-status-badge class="header-badge" [status]="current.status" />
+    }
+  </div>
+</ion-header>
+
+<ion-content class="detail-content">
+  <ion-refresher slot="fixed" (ionRefresh)="onRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  @switch (status()) {
+    @case ('loading') {
+      <div aria-hidden="true">
+        <section class="card items">
+          @for (item of skeletons; track item) {
+            <div class="item">
+              <ion-skeleton-text class="skeleton-media" [animated]="true"></ion-skeleton-text>
+              <div class="item-info">
+                <ion-skeleton-text class="skeleton-line" [animated]="true"></ion-skeleton-text>
+                <ion-skeleton-text class="skeleton-line skeleton-line--short" [animated]="true"></ion-skeleton-text>
+              </div>
+            </div>
+          }
+        </section>
+        @for (item of skeletons; track item) {
+          <section class="card icon-card">
+            <ion-skeleton-text class="skeleton-media skeleton-media--icon" [animated]="true"></ion-skeleton-text>
+            <div class="icon-card-info">
+              <ion-skeleton-text class="skeleton-line skeleton-line--short" [animated]="true"></ion-skeleton-text>
+              <ion-skeleton-text class="skeleton-line" [animated]="true"></ion-skeleton-text>
+            </div>
+          </section>
+        }
+      </div>
+    }
+
+    @case ('error') {
+      <app-state-view
+        type="error"
+        title="No pudimos cargar el pedido"
+        message="Revisa tu conexión e intenta de nuevo."
+        (retry)="load()"
+      />
+    }
+
+    @case ('not-found') {
+      <app-state-view title="Pedido no encontrado" message="Este pedido no existe o no pertenece a tu cuenta." />
+      <button class="back-orders-button" type="button" (click)="goBack()">Volver a mis pedidos</button>
+    }
+
+    @default {
+      @if (order(); as current) {
+        <!-- Misma estructura que "Tu pedido" (carrito), en modo de solo lectura -->
+        <section class="card items" aria-label="Productos del pedido">
+          @for (item of current.details; track item.id) {
+            <article class="item">
+              <div class="item-media" [style.background]="mediaColor(item)">
+                @if (showImage(item)) {
+                  <img [src]="item.product?.image_url" [alt]="item.product?.name" (error)="onImageError(item.id)" />
+                } @else {
+                  <ion-icon name="image-outline"></ion-icon>
+                }
+              </div>
+
+              <div class="item-info">
+                <h2 class="item-name">{{ item.product?.name ?? 'Producto no disponible' }}</h2>
+                <p class="item-package">{{ itemLabel(item) }}</p>
+                <span class="item-subtotal">{{ item.subtotal | currency: 'USD' : 'symbol' : '1.2-2' }}</span>
+              </div>
+            </article>
+          }
+
+          <div class="summary">
+            <div class="summary-row">
+              <span>Subtotal</span>
+              <span>{{ current.total | currency: 'USD' : 'symbol' : '1.2-2' }}</span>
+            </div>
+            <div class="summary-row summary-row--total">
+              <span>Total</span>
+              <span>{{ current.total | currency: 'USD' : 'symbol' : '1.2-2' }}</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="card icon-card" aria-label="Dirección de entrega">
+          <div class="card-icon">
+            <ion-icon name="location-outline"></ion-icon>
+          </div>
+          <div class="icon-card-info">
+            <p class="icon-card-label">Entregar en</p>
+            @if (businessName(); as name) {
+              <h2 class="delivery-name">{{ name }}</h2>
+            }
+            <p class="delivery-address">{{ current.delivery_address }}</p>
+            @if (current.delivery_reference; as reference) {
+              <p class="delivery-reference">Referencia: {{ reference }}</p>
+            }
+          </div>
+        </section>
+
+        @if (current.customer_comment; as comment) {
+          <section class="card note">
+            <span class="field-label">Nota para el repartidor</span>
+            <p class="note-text">{{ comment }}</p>
+          </section>
+        }
+
+        <section class="card icon-card" aria-label="Fechas del pedido">
+          <div class="card-icon">
+            <ion-icon name="calendar-outline"></ion-icon>
+          </div>
+          <div class="icon-card-info">
+            <p class="icon-card-label">Fechas</p>
+            @for (date of dates(); track date.label) {
+              <div class="date-row">
+                <span class="date-label">{{ date.label }}</span>
+                <span class="date-value">{{ date.value }}</span>
+              </div>
+            }
+          </div>
+        </section>
+      }
+    }
+  }
+</ion-content>

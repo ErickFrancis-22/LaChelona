@@ -23,6 +23,7 @@ import { OrderService } from '../../services/order.service';
 import { ProductService } from '../../services/product.service';
 import { ProfileService } from '../../services/profile.service';
 import { StateViewComponent } from '../../components/state-view/state-view.component';
+import { formatOrderNumber } from '../../utils/order-status';
 import { pastelColor } from '../../utils/pastel-color';
 
 type LoadStatus = 'loading' | 'ready' | 'error';
@@ -165,7 +166,7 @@ export class CartPage {
         this.cart.clear();
         this.comment.set('');
         await this.navCtrl.navigateRoot('/tabs/orders');
-        await this.showSuccess(`¡Pedido #${res.data.id} enviado! Te avisaremos cuando lo confirmemos.`);
+        await this.showSuccess(`¡Pedido ${formatOrderNumber(res.data.id)} enviado!`);
       },
       error: async (err: HttpErrorResponse) => {
         await loading.dismiss();
