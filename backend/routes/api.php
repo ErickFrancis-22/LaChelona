@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\AdminOrderController;
 use App\Http\Controllers\Api\AdminInvoiceController;
 use App\Http\Controllers\Api\AdminReportController;
 use App\Http\Controllers\Api\AdminCategoryController;
+use App\Http\Controllers\Api\AdminProfileController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/health', function () {
@@ -85,5 +86,10 @@ Route::prefix('admin')
         Route::get('/categories/{id}', [AdminCategoryController::class, 'show']);
         Route::put('/categories/{id}', [AdminCategoryController::class, 'update']);
         Route::patch('/categories/{id}/status', [AdminCategoryController::class, 'updateStatus']);
+   
+    // Perfil administrativo
+        Route::get('/profile', [AdminProfileController::class, 'show']);
+        Route::put('/profile', [AdminProfileController::class, 'update']);
+        Route::patch('/profile/password', [AdminProfileController::class, 'updatePassword']);
     });
     
