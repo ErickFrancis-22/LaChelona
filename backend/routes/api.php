@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\AdminInventoryController;
 use App\Http\Controllers\Api\AdminOrderController;
 use App\Http\Controllers\Api\AdminInvoiceController;
 use App\Http\Controllers\Api\AdminReportController;
+use App\Http\Controllers\Api\AdminCategoryController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/health', function () {
@@ -77,5 +78,12 @@ Route::prefix('admin')
 
     //Reportes mensuales
         Route::get('/reports/monthly', [AdminReportController::class, 'monthly']);
+
+    // Categorías
+        Route::get('/categories', [AdminCategoryController::class, 'index']);
+        Route::post('/categories', [AdminCategoryController::class, 'store']);
+        Route::get('/categories/{id}', [AdminCategoryController::class, 'show']);
+        Route::put('/categories/{id}', [AdminCategoryController::class, 'update']);
+        Route::patch('/categories/{id}/status', [AdminCategoryController::class, 'updateStatus']);
     });
     
