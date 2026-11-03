@@ -3,7 +3,8 @@ import AdminLayout from '../layouts/AdminLayout.vue'
 import DashboardView from '../views/admin/DashboardView.vue'
 import LoginView from '../LoginView.vue'
 import ClientesView from '../ClientesView.vue'
-
+import ProductsView from '../views/admin/ProductsView.vue'
+import CategoriesView from '../views/admin/CategoriesView.vue'
 const PlaceholderView = {
   template: `
     <section class="placeholder-view">
@@ -43,8 +44,7 @@ const routes = [
       {
         path: 'productos',
         name: 'admin-productos',
-        component: PlaceholderView,
-        props: { title: 'Productos' },
+        component: ProductsView,
         meta: { title: 'Productos' },
       },
       {
@@ -55,12 +55,11 @@ const routes = [
         meta: { title: 'Pedidos' },
       },
       {
-        path: 'categorias',
-        name: 'admin-categorias',
-        component: PlaceholderView,
-        props: { title: 'Categorías' },
-        meta: { title: 'Categorías' },
-      },
+  path: 'categorias',
+  name: 'admin-categorias',
+  component: CategoriesView,
+  meta: { title: 'Categorías' },
+},
       {
         path: 'inventario',
         name: 'admin-inventario',
