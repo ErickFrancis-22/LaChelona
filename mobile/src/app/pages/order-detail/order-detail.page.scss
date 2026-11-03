@@ -249,6 +249,41 @@
   overflow-wrap: anywhere;
 }
 
+// Acciones de un pedido pendiente
+.actions {
+  margin-top: 4px;
+}
+
+.edit-button,
+.cancel-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  height: 50px;
+  border-radius: 14px;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.edit-button {
+  border: 0;
+  background: var(--navy);
+  color: #ffffff;
+
+  ion-icon {
+    font-size: 18px;
+  }
+}
+
+.cancel-button {
+  margin-top: 10px;
+  border: 1px solid #f0c4bb;
+  background: #ffffff;
+  color: #c5000f;
+}
+
 // Pedido no encontrado
 .back-orders-button {
   display: block;

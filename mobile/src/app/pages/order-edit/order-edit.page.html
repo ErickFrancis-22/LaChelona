@@ -1,0 +1,176 @@
+<ion-header class="ion-no-border">
+  <div class="header">
+    <button class="back-button" type="button" aria-label="Volver" (click)="discard()">
+      <ion-icon name="chevron-back"></ion-icon>
+    </button>
+    <div class="header-text">
+      <p class="header-caption">{{ caption() }}</p>
+      <h1 class="header-title">Editar pedido</h1>
+    </div>
+  </div>
+</ion-header>
+
+<ion-content class="edit-content">
+  @switch (status()) {
+    @case ('loading') {
+      <div aria-hidden="true">
+        <section class="card items">
+          @for (item of skeletons; track item) {
+            <div class="item">
+              <ion-skeleton-text class="skeleton-media" [animated]="true"></ion-skeleton-text>
+              <div class="item-info">
+                <ion-skeleton-text class="skeleton-line" [animated]="true"></ion-skeleton-text>
+                <ion-skeleton-text class="skeleton-line skeleton-line--short" [animated]="true"></ion-skeleton-text>
+              </div>
+            </div>
+          }
+        </section>
+      </div>
+    }
+
+    @case ('error') {
+      <app-state-view
+        type="error"
+        title="No pudimos cargar el pedido"
+        message="Revisa tu conexión e intenta de nuevo."
+        (retry)="load()"
+      />
+    }
+
+    @case ('not-found') {
+      <app-state-view title="Pedido no encontrado" message="Este pedido no existe o no pertenece a tu cuenta." />
+      <button class="secondary-button" type="button" (click)="leave()">Volver</button>
+    }
+
+    @case ('locked') {
+      <!-- El backend ya no lo considera PENDING: se bloquea la edición y se muestra su estado actual -->
+      <div class="locked">
+        <div class="locked-icon">
+          <ion-icon name="lock-closed-outline" aria-hidden="true"></ion-icon>
+        </div>
+        <h2 class="locked-title">Este pedido ya no se puede editar</h2>
+        <p class="locked-message">
+          Su estado actual es <strong>{{ statusLabels[order()!.status] }}</strong>. Solo los pedidos pendientes se pueden
+          modificar o cancelar.
+        </p>
+      </div>
+      <button class="secondary-button" type="button" (click)="viewDetail()">Ver detalle del pedido</button>
+    }
+
+    @default {
+      <section class="card items" aria-label="Productos del pedido">
+        @for (item of items(); track item.product.id) {
+          <article class="item">
+            <div class="item-media" [style.background]="mediaColor(item.product)">
+              @if (showImage(item.product)) {
+                <img [src]="item.product.image_url" [alt]="item.product.name" (error)="onImageError(item.product.id)" />
+              } @else {
+                <ion-icon name="image-outline"></ion-icon>
+              }
+            </div>
+
+            <div class="item-info">
+              <h2 class="item-name">{{ item.product.name }}</h2>
+              <p class="item-package">{{ packageLabel(item.product) }}</p>
+              <span class="item-subtotal">
+                {{ item.product.sale_price * item.quantity | currency: 'USD' : 'symbol' : '1.2-2' }}
+              </span>
+            </div>
+
+            <div class="stepper" role="group" [attr.aria-label]="'Cantidad de ' + item.product.name">
+              <!-- Con cantidad 1 el botón de restar quita el producto -->
+              @if (item.quantity === 1) {
+                <button
+                  class="stepper-remove"
+                  type="button"
+                  [attr.aria-label]="'Quitar ' + item.product.name + ' del pedido'"
+                  (click)="decrease(item.product)"
+                >
+                  <ion-icon name="trash-outline"></ion-icon>
+                </button>
+              } @else {
+                <button type="button" [attr.aria-label]="'Quitar uno de ' + item.product.name" (click)="decrease(item.product)">
+                  <ion-icon name="remove"></ion-icon>
+                </button>
+              }
+              <span class="stepper-quantity" aria-live="polite">{{ item.quantity }}</span>
+              <button
+                type="button"
+                [class.stepper--max]="item.quantity >= item.product.stock"
+                [attr.aria-label]="'Agregar uno más de ' + item.product.name"
+                (click)="increase(item.product)"
+              >
+                <ion-icon name="add"></ion-icon>
+              </button>
+            </div>
+          </article>
+        } @empty {
+          <!-- Solo si al abrir la edición ningún producto del pedido seguía disponible -->
+          <p class="items-empty">Ninguno de los productos de este pedido está disponible. Agrega otros para guardarlo.</p>
+        }
+      </section>
+
+      <button class="add-button" type="button" (click)="pickerOpen.set(true)">
+        <ion-icon name="add" aria-hidden="true"></ion-icon>
+        Agregar más productos
+      </button>
+
+      <!-- La dirección es la que se guardó al hacer el pedido; el backend no permite cambiarla -->
+      <section class="card delivery" aria-label="Dirección de entrega">
+        <div class="delivery-icon">
+          <ion-icon name="location-outline"></ion-icon>
+        </div>
+        <div class="delivery-info">
+          <p class="delivery-label">Entregar en</p>
+          @if (businessName(); as name) {
+            <h2 class="delivery-name">{{ name }}</h2>
+          }
+          <p class="delivery-address">{{ order()?.delivery_address }}</p>
+          @if (order()?.delivery_reference; as reference) {
+            <p class="delivery-reference">Referencia: {{ reference }}</p>
+          }
+        </div>
+      </section>
+
+      <section class="card note">
+        <span class="field-label">Nota para el repartidor (opcional)</span>
+        <ion-textarea
+          aria-label="Nota para el repartidor"
+          class="note-input"
+          placeholder="Ej. entregar por la puerta lateral"
+          [autoGrow]="true"
+          [rows]="2"
+          [maxlength]="commentMaxLength"
+          [counter]="comment().length > commentMaxLength - 100"
+          [ngModel]="comment()"
+          (ngModelChange)="comment.set($event ?? '')"
+        ></ion-textarea>
+      </section>
+    }
+  }
+</ion-content>
+
+@if (status() === 'ready') {
+  <ion-footer class="ion-no-border">
+    <div class="summary">
+      <div class="summary-row">
+        <span>Total</span>
+        <span>{{ total() | currency: 'USD' : 'symbol' : '1.2-2' }}</span>
+      </div>
+      <button class="save-button" type="button" [disabled]="items().length === 0 || saving()" (click)="save()">
+        Guardar cambios
+      </button>
+      <button class="discard-button" type="button" (click)="discard()">Descartar cambios</button>
+    </div>
+  </ion-footer>
+}
+
+<ion-modal [isOpen]="pickerOpen()" (didDismiss)="pickerOpen.set(false)">
+  <ng-template>
+    <app-product-picker
+      [excludedIds]="productIds()"
+      (added)="onProductsAdded($event)"
+      (closed)="pickerOpen.set(false)"
+    ></app-product-picker>
+  </ng-template>
+</ion-modal>

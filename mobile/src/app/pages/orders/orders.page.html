@@ -60,11 +60,11 @@
           <app-order-timeline class="current-timeline" [order]="order" />
 
           @if (isPending(order.status)) {
-            <button class="primary-button" type="button" (click)="comingSoon()">
+            <button class="primary-button" type="button" (click)="editOrder(order)">
               <ion-icon name="create-outline" aria-hidden="true"></ion-icon>
               Editar pedido
             </button>
-            <button class="outline-button" type="button" (click)="comingSoon()">Cancelar pedido</button>
+            <button class="outline-button" type="button" (click)="cancelOrder(order)">Cancelar pedido</button>
             <p class="current-note">Puedes editarlo o cancelarlo hasta que el distribuidor lo confirme.</p>
           } @else {
             <button class="primary-button" type="button" (click)="openDetail(order)">Ver detalle del pedido</button>

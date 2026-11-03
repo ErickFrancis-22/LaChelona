@@ -261,6 +261,8 @@
   --highlight-height: 0;
   border: 1px solid var(--input-border);
   border-radius: 12px;
+  // El fondo lo pinta un contenedor interno con esquinas rectas: sin esto asoma por fuera del borde redondeado
+  overflow: hidden;
   font-size: 14px;
 
   &.has-focus {

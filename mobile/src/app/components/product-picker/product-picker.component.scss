@@ -1,0 +1,195 @@
+// Mismo estilo de modal que location-picker y mismos bloques de producto que "Tu pedido"
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.picker-toolbar {
+  --background: #ffffff;
+  --color: #1b1f2a;
+
+  ion-title {
+    font-size: 17px;
+    font-weight: 800;
+  }
+
+  ion-button {
+    --color: #1e2f55;
+  }
+
+  &--search {
+    --border-width: 0 0 1px;
+    --border-color: #e6e8ee;
+    --padding-start: 8px;
+    --padding-end: 8px;
+  }
+}
+
+.picker-search {
+  --background: #f3f4f8;
+  --border-radius: 12px;
+  --box-shadow: none;
+  padding-bottom: 8px;
+}
+
+.picker-content {
+  --padding-start: 16px;
+  --padding-end: 16px;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+
+  & + & {
+    border-top: 1px solid #e6e8ee;
+  }
+
+  &--disabled {
+    opacity: 0.55;
+  }
+}
+
+.row-media {
+  position: relative;
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  overflow: hidden;
+  border-radius: 12px;
+  color: rgba(30, 47, 85, 0.35);
+  font-size: 20px;
+
+  img {
+    position: absolute;
+    inset: 4px;
+    width: calc(100% - 8px);
+    height: calc(100% - 8px);
+    object-fit: contain;
+  }
+}
+
+.row-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.row-name {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.3;
+  color: #1b1f2a;
+}
+
+.row-package {
+  margin: 2px 0 0;
+  font-size: 12px;
+  line-height: 1.3;
+  color: #5f6675;
+}
+
+.row-tag {
+  flex-shrink: 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: #5f6675;
+}
+
+// Amarillo como el "+" del catálogo
+.row-button {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 0;
+  border-radius: 12px;
+  background: #ffc107;
+  color: #1e2f55;
+  font-size: 22px;
+}
+
+// Control de cantidad igual al de la edición: borde gris y papelera roja con cantidad 1
+.stepper {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  height: 40px;
+  border: 1px solid #dfe2ea;
+  border-radius: 12px;
+  color: #1b1f2a;
+
+  button {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 100%;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font-size: 18px;
+  }
+
+  .stepper-remove {
+    color: #c5000f;
+  }
+
+  // Sigue activo para poder mostrar el aviso de stock, pero se ve atenuado
+  .stepper--max {
+    opacity: 0.4;
+  }
+}
+
+.stepper-quantity {
+  min-width: 18px;
+  font-size: 15px;
+  font-weight: 800;
+  text-align: center;
+}
+
+.picker-footer {
+  padding: 12px 16px calc(12px + var(--ion-safe-area-bottom, 0px));
+  background: #ffffff;
+  border-top: 1px solid #e6e8ee;
+}
+
+.picker-confirm {
+  --background: #1e2f55;
+  --background-activated: #16233f;
+  --color: #ffffff;
+  --border-radius: 14px;
+  --box-shadow: none;
+  height: 54px;
+  margin: 0;
+  font-size: 16px;
+  font-weight: 800;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.skeleton-media {
+  --border-radius: 12px;
+  flex-shrink: 0;
+  width: 52px;
+  height: 52px;
+  margin: 0;
+}
+
+.skeleton-line {
+  --border-radius: 6px;
+  width: 75%;
+  height: 13px;
+  margin: 0 0 8px;
+
+  &--short {
+    width: 45%;
+  }
+}
