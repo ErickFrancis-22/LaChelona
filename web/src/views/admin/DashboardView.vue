@@ -5,8 +5,6 @@
       <div>
         <p class="fecha-actual">{{ fechaActual }}</p>
         <h2>Pedidos del día</h2>
-        
-        
       </div>
 
       <div class="heading-actions">
@@ -17,9 +15,33 @@
           aria-label="Buscar pedido o negocio"
         />
 
-        <button class="today-button" type="button">
-          Hoy <span>▾</span>
+        <button class="today-button" type="button" @click="openDatePicker">
+          {{ !selectedDate ? 'Todas las fechas' : (selectedDate === todayDate ? 'Hoy' : selectedDate) }}
+          <span>▾</span>
         </button>
+
+        <input
+          ref="dateInput"
+          class="date-picker-hidden"
+          type="date"
+          :value="selectedDate"
+          aria-label="Filtrar pedidos por fecha"
+          @change="handleDateChange"
+        />
+
+        <select
+          v-model="selectedStatus"
+          class="status-filter"
+          aria-label="Filtrar pedidos por estado"
+          @change="loadOrders"
+        >
+          <option value="">Todos</option>
+          <option value="PENDING">Pendientes</option>
+          <option value="CONFIRMED">Confirmados</option>
+          <option value="IN_TRANSIT">En camino</option>
+          <option value="DELIVERED">Entregados</option>
+          <option value="CANCELLED">Cancelados</option>
+        </select>
       </div>
     </header>
 
@@ -42,11 +64,14 @@
     <div class="orders-heading">
       <div>
         <h3>Seguimiento de pedidos</h3>
-      
       </div>
 
       {{ loading ? 'CARGANDO PEDIDOS...' : '' }}
     </div>
+
+    <p v-if="errorMessage" class="api-error" role="alert">
+      {{ errorMessage }}
+    </p>
 
     <div class="orders-grid">
       <section
@@ -76,68 +101,143 @@
           </div>
 
           <h5>{{ order.business }}</h5>
-          <p v-if="order.products !== null">{{ order.products }} productos</p>
-<p v-else>Pedido registrado</p>
+
+          <p v-if="order.products !== null">
+            {{ order.products }} productos
+          </p>
+
+          <p v-else>Pedido registrado</p>
+
           <div class="order-bottom">
             <strong>${{ order.total.toFixed(2) }}</strong>
           </div>
 
           <button
+            class="order-button detail"
+            type="button"
+            :disabled="detailLoading && selectedOrderId === order.id"
+            @click="toggleOrderDetail(order.id)"
+          >
+            {{ selectedOrderId === order.id ? 'Ocultar detalle' : 'Ver detalle' }}
+          </button>
+
+          <button
             v-if="order.status === 'Pendientes'"
             class="order-button primary"
             type="button"
-            @click="changeStatus(order.id, 'Confirmados')"
+            :disabled="processingOrderId === order.id"
+            @click="changeStatus(order.id)"
           >
-            Confirmar
+            {{ processingOrderId === order.id ? 'Procesando...' : 'Confirmar' }}
           </button>
 
           <button
             v-else-if="order.status === 'Confirmados'"
             class="order-button blue"
             type="button"
-            @click="changeStatus(order.id, 'En camino')"
+            :disabled="processingOrderId === order.id"
+            @click="changeStatus(order.id)"
           >
-            Marcar en camino
+            {{ processingOrderId === order.id ? 'Procesando...' : 'Marcar en camino' }}
           </button>
 
           <button
             v-else-if="order.status === 'En camino'"
             class="order-button green"
             type="button"
-            @click="changeStatus(order.id, 'Entregados')"
+            :disabled="processingOrderId === order.id"
+            @click="changeStatus(order.id)"
           >
-            Marcar entregado
+            {{ processingOrderId === order.id ? 'Procesando...' : 'Marcar entregado' }}
           </button>
 
           <span v-else class="completed-label">
             {{ order.status === 'Entregados' ? 'Pedido entregado' : 'Pedido cancelado' }}
           </span>
+
+          <div
+            v-if="selectedOrderId === order.id"
+            class="order-detail"
+          >
+            <p v-if="detailLoading">
+              Cargando detalle...
+            </p>
+
+            <p v-else-if="detailError" role="alert">
+              {{ detailError }}
+            </p>
+
+            <template v-else-if="orderDetail">
+              <p><strong>Productos del pedido</strong></p>
+
+              <p v-if="!orderDetail.details || orderDetail.details.length === 0">
+                Este pedido no tiene productos registrados.
+              </p>
+
+              <div
+                v-for="item in orderDetail.details || []"
+                :key="item.id"
+                class="order-detail-item"
+              >
+                <span>
+                  {{ item.product?.name || `Producto #${item.product_id}` }}
+                  <br />
+                  Cantidad: {{ item.quantity }}
+                  × ${{ Number(item.unit_price).toFixed(2) }}
+                </span>
+
+                <span>
+                  ${{ Number(item.subtotal).toFixed(2) }}
+                </span>
+              </div>
+
+              <p>
+                <strong>Comentario del cliente:</strong>
+                {{ orderDetail.customer_comment || 'Sin comentario' }}
+              </p>
+
+              <p v-if="orderDetail.delivery_address">
+                <strong>Dirección de entrega:</strong>
+                {{ orderDetail.delivery_address }}
+              </p>
+
+              <p v-if="orderDetail.delivery_reference">
+                <strong>Referencia:</strong>
+                {{ orderDetail.delivery_reference }}
+              </p>
+            </template>
+          </div>
         </article>
 
         <p
           v-if="filteredOrders(column.status).length === 0"
           class="empty-column"
         >
-          No hay pedidos en este estado.
+          {{ loading ? 'Cargando pedidos...' : 'No hay pedidos en este estado.' }}
         </p>
       </section>
     </div>
   </section>
 </template>
 
-
 <script setup lang="ts">
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import axios from 'axios'
+
+import {
+  listarPedidos,
+  obtenerPedido,
+  confirmarPedido,
+  marcarPedidoEnTransito,
+  marcarPedidoEntregado,
+  crearResumenInicial,
+  type EstadoPedido,
+  type PedidoListado,
+  type PedidoDetalle,
+  type ResumenPedidos,
+} from '../../services/orders'
 
 
-const fechaActual = computed(() =>
-  new Intl.DateTimeFormat('es-SV', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric'
-  }).format(new Date())
-)
-import { computed, onMounted, ref } from 'vue'
 
 type OrderStatus =
   | 'Pendientes'
@@ -145,18 +245,6 @@ type OrderStatus =
   | 'En camino'
   | 'Entregados'
   | 'Cancelados'
-
-interface ApiOrder {
-  id: number
-  client_id?: number
-  status: string
-  total: number | string
-  customer_comment?: string | null
-  created_at: string
-  client?: {
-    business_name?: string
-  }
-}
 
 interface Order {
   id: number
@@ -167,10 +255,67 @@ interface Order {
   status: OrderStatus
 }
 
+
+
+function getLocalDate(): string {
+  const date = new Date()
+
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+
+  return `${year}-${month}-${day}`
+}
+
+const todayDate = getLocalDate()
+
+
+
+const selectedDate = ref('')
+
+const selectedStatus = ref<EstadoPedido | ''>('')
+
+const dateInput = ref<HTMLInputElement | null>(null)
+
+const fechaActual = computed(() =>
+  new Intl.DateTimeFormat('es-SV', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  }).format(new Date()),
+)
+
+
+
 const search = ref('')
+
 const orders = ref<Order[]>([])
+
+const summary = ref<ResumenPedidos>(crearResumenInicial())
+
 const loading = ref(true)
+
 const errorMessage = ref('')
+
+const processingOrderId = ref<number | null>(null)
+
+
+
+const selectedOrderId = ref<number | null>(null)
+
+const orderDetail = ref<PedidoDetalle | null>(null)
+
+const detailLoading = ref(false)
+
+const detailError = ref('')
+
+let detailRequestId = 0
+
+let listRequestId = 0
+
+let searchTimer: ReturnType<typeof setTimeout> | undefined
+
 
 const columns: { status: OrderStatus; color: string }[] = [
   { status: 'Pendientes', color: 'yellow' },
@@ -179,6 +324,16 @@ const columns: { status: OrderStatus; color: string }[] = [
   { status: 'Entregados', color: 'gray-dot' },
   { status: 'Cancelados', color: 'red-dot' },
 ]
+
+
+
+const apiStatusByLabel: Record<OrderStatus, EstadoPedido> = {
+  Pendientes: 'PENDING',
+  Confirmados: 'CONFIRMED',
+  'En camino': 'IN_TRANSIT',
+  Entregados: 'DELIVERED',
+  Cancelados: 'CANCELLED',
+}
 
 function normalizeStatus(status: string): OrderStatus {
   const value = status.toLowerCase().trim().replace(/[\s-]+/g, '_')
@@ -212,10 +367,14 @@ function normalizeStatus(status: string): OrderStatus {
   return statuses[value] ?? 'Pendientes'
 }
 
+
+
 function formatTime(value: string): string {
   const date = new Date(value)
 
-  if (Number.isNaN(date.getTime())) return '—'
+  if (Number.isNaN(date.getTime())) {
+    return '—'
+  }
 
   return new Intl.DateTimeFormat('es-SV', {
     hour: '2-digit',
@@ -223,105 +382,330 @@ function formatTime(value: string): string {
   }).format(date)
 }
 
-function mapOrder(item: ApiOrder): Order {
+
+
+function mapOrder(item: PedidoListado): Order {
   return {
     id: item.id,
-    business: item.client?.business_name
-      ?? (item.client_id ? `Cliente #${item.client_id}` : `Pedido #${item.id}`),
-    products: null,
+
+    business:
+      item.client?.business_name ||
+      item.client?.contact_name ||
+      (item.client?.id
+        ? `Cliente #${item.client.id}`
+        : `Pedido #${item.id}`),
+
+    products: Number.isFinite(Number(item.products_count))
+      ? Number(item.products_count)
+      : null,
+
     total: Number(item.total) || 0,
+
     time: formatTime(item.created_at),
+
     status: normalizeStatus(item.status),
   }
 }
 
-async function loadOrders() {
+
+
+function getErrorMessage(error: unknown): string {
+  if (axios.isAxiosError(error)) {
+    const responseData = error.response?.data as
+      | {
+          message?: string
+          errors?: Record<string, string[]>
+        }
+      | undefined
+
+    if (responseData?.message) {
+      return responseData.message
+    }
+
+    if (responseData?.errors) {
+      const firstError = Object.values(responseData.errors).flat()[0]
+
+      if (firstError) {
+        return firstError
+      }
+    }
+
+    if (error.response?.status === 401) {
+      return 'Tu sesión no está autorizada. Inicia sesión nuevamente.'
+    }
+
+    if (error.response?.status === 403) {
+      return 'Tu usuario no tiene permiso para realizar esta operación.'
+    }
+
+    if (error.response?.status === 422) {
+      return 'Laravel rechazó la operación. Revisa las condiciones del pedido.'
+    }
+
+    if (!error.response) {
+      return 'No se pudo conectar con Laravel. Verifica que el servidor esté iniciado.'
+    }
+
+    return `No se pudo completar la solicitud (HTTP ${error.response.status}).`
+  }
+
+  return error instanceof Error
+    ? error.message
+    : 'Ocurrió un error inesperado.'
+}
+
+
+
+async function loadOrders(): Promise<void> {
+  const requestId = ++listRequestId
+
   loading.value = true
+
   errorMessage.value = ''
 
   try {
-    const token =
-      localStorage.getItem('token') ||
-      sessionStorage.getItem('token')
+    const response = await listarPedidos({
+      date: selectedDate.value || undefined,
 
-    const response = await fetch('/api/orders', {
-      method: 'GET',
-      headers: {
-        Accept: 'application/json',
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
+      status: selectedStatus.value || undefined,
+
+      search: search.value.trim() || undefined,
     })
 
-    if (!response.ok) {
-      if (response.status === 401) {
-        throw new Error('Tu sesión no está autorizada. Inicia sesión nuevamente.')
-      }
-
-      if (response.status === 403) {
-        throw new Error('Tu usuario no tiene permiso para consultar estos pedidos.')
-      }
-
-      throw new Error(`No se pudieron cargar los pedidos (HTTP ${response.status}).`)
+    if (requestId !== listRequestId) {
+      return
     }
 
-    const result = await response.json()
-    const records = Array.isArray(result) ? result : result.data
-
-    if (!Array.isArray(records)) {
-      throw new Error('La respuesta de la API no contiene una lista de pedidos válida.')
+    if (!Array.isArray(response.data)) {
+      throw new Error(
+        'La respuesta de Laravel no contiene una lista de pedidos válida.',
+      )
     }
 
-    orders.value = records.map((item: ApiOrder) => mapOrder(item))
+    // Listado real de Laravel.
+    orders.value = response.data.map(mapOrder)
+
+    // Resumen enviado por Laravel.
+    summary.value = {
+      ...crearResumenInicial(),
+      ...(response.summary || {}),
+    }
   } catch (error) {
+    if (requestId !== listRequestId) {
+      return
+    }
+
     orders.value = []
-    errorMessage.value =
-      error instanceof Error
-        ? error.message
-        : 'Ocurrió un error al consultar los pedidos.'
+
+    summary.value = crearResumenInicial()
+
+    errorMessage.value = getErrorMessage(error)
   } finally {
-    loading.value = false
+    if (requestId === listRequestId) {
+      loading.value = false
+    }
   }
 }
 
+
+
 const summaries = computed(() =>
   columns.map((column) => {
-    const matching = orders.value.filter(
-      (order) => order.status === column.status,
-    )
+    const status = apiStatusByLabel[column.status]
 
-    const amount = matching.reduce((sum, order) => sum + order.total, 0)
+    const amount = orders.value
+      .filter((order) => order.status === column.status)
+      .reduce((sum, order) => sum + order.total, 0)
 
     return {
       label: column.status,
+
       color: column.color,
-      count: matching.length,
+
+      count: Number(summary.value[status] || 0),
+
       caption: `$${amount.toFixed(2)}`,
     }
   }),
 )
 
-function filteredOrders(status: OrderStatus) {
-  const term = search.value.trim().toLowerCase()
 
-  return orders.value.filter((order) => {
-    const matchesStatus = order.status === status
-    const matchesSearch =
-      !term ||
-      order.business.toLowerCase().includes(term) ||
-      String(order.id).includes(term)
 
-    return matchesStatus && matchesSearch
-  })
-}
-function changeStatus(orderId: number, newStatus: OrderStatus) {
-  orders.value = orders.value.map((order) =>
-    order.id === orderId
-      ? { ...order, status: newStatus }
-      : order
+function filteredOrders(status: OrderStatus): Order[] {
+  return orders.value.filter(
+    (order) => order.status === status,
   )
 }
 
-onMounted(loadOrders)
+
+
+function openDatePicker(): void {
+  const input = dateInput.value
+
+  if (!input) return
+
+  if (typeof input.showPicker === 'function') {
+    input.showPicker()
+  } else {
+    input.click()
+  }
+}
+
+function handleDateChange(event: Event): void {
+  const target = event.target as HTMLInputElement
+
+  selectedDate.value = target.value
+
+  void loadOrders()
+}
+
+
+
+watch(search, () => {
+  if (searchTimer) {
+    clearTimeout(searchTimer)
+  }
+
+  searchTimer = setTimeout(() => {
+    void loadOrders()
+  }, 350)
+})
+
+
+
+async function toggleOrderDetail(id: number): Promise<void> {
+  if (selectedOrderId.value === id) {
+    selectedOrderId.value = null
+
+    orderDetail.value = null
+
+    detailError.value = ''
+
+    detailRequestId++
+
+    detailLoading.value = false
+
+    return
+  }
+
+  selectedOrderId.value = id
+
+  orderDetail.value = null
+
+  detailError.value = ''
+
+  detailLoading.value = true
+
+  const requestId = ++detailRequestId
+
+  try {
+    const detail = await obtenerPedido(id)
+
+    if (
+      requestId !== detailRequestId ||
+      selectedOrderId.value !== id
+    ) {
+      return
+    }
+
+    if (!detail || typeof detail.id !== 'number') {
+      throw new Error(
+        'Laravel no devolvió el detalle del pedido.',
+      )
+    }
+
+    orderDetail.value = detail
+  } catch (error) {
+    if (
+      requestId !== detailRequestId ||
+      selectedOrderId.value !== id
+    ) {
+      return
+    }
+
+    detailError.value = getErrorMessage(error)
+  } finally {
+    if (requestId === detailRequestId) {
+      detailLoading.value = false
+    }
+  }
+}
+
+
+
+async function changeStatus(orderId: number): Promise<void> {
+  if (processingOrderId.value !== null) {
+    return
+  }
+
+  const order = orders.value.find(
+    (item) => item.id === orderId,
+  )
+
+  if (!order) return
+
+  // Solo pedir confirmación antes de descontar inventario.
+  if (order.status === 'Pendientes') {
+    const accepted = window.confirm(
+      '¿Confirmas este pedido? Laravel validará el stock y realizará el descuento de inventario.',
+    )
+
+    if (!accepted) return
+  }
+
+  processingOrderId.value = orderId
+
+  errorMessage.value = ''
+
+  try {
+    // PENDING -> CONFIRMED
+    if (order.status === 'Pendientes') {
+      await confirmarPedido(orderId)
+    }
+
+    // CONFIRMED -> IN_TRANSIT
+    else if (order.status === 'Confirmados') {
+      await marcarPedidoEnTransito(orderId)
+    }
+
+    // IN_TRANSIT -> DELIVERED
+    else if (order.status === 'En camino') {
+      await marcarPedidoEntregado(orderId)
+    }
+
+    // No permitir otras transiciones desde Vue.
+    else {
+      return
+    }
+
+    // Laravel confirma la operación.
+    // Se vuelve a consultar el listado real.
+    await loadOrders()
+
+    // Si el detalle estaba abierto, actualizarlo también.
+    if (selectedOrderId.value === orderId) {
+      await toggleOrderDetail(orderId)
+    }
+  } catch (error) {
+    // No se modifica el estado local.
+    // Se conserva la información anterior si Laravel rechaza.
+    errorMessage.value = getErrorMessage(error)
+  } finally {
+    processingOrderId.value = null
+  }
+}
+
+
+
+onMounted(() => {
+  void loadOrders()
+})
+
+onBeforeUnmount(() => {
+  if (searchTimer) {
+    clearTimeout(searchTimer)
+  }
+})
 </script>
 
 <style scoped>
@@ -658,6 +1042,87 @@ onMounted(loadOrders)
 
   .page-heading h2 {
     font-size: 22px;
+  }
+}
+
+/* Elementos funcionales para la conexión con Laravel */
+
+.status-filter {
+  padding: 9px 13px;
+  border: 1px solid #e2e7ef;
+  border-radius: 8px;
+  background: white;
+  color: #344156;
+  font-size: 12px;
+}
+
+.heading-actions .date-picker-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  border: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.api-error {
+  margin: 0 0 14px;
+  padding: 10px 12px;
+  border-radius: 7px;
+  background: #fff0f0;
+  color: #a12b2b;
+  font-size: 12px;
+}
+
+.order-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.order-button.detail {
+  background: #eef2f7;
+  color: #344156;
+}
+
+.order-detail {
+  margin-top: 10px;
+  padding: 10px;
+  border: 1px solid #e4e8ef;
+  border-radius: 7px;
+  background: #f8fafc;
+}
+
+.order-detail p {
+  margin: 5px 0;
+  color: #526176;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.order-detail-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 7px 0;
+  border-bottom: 1px solid #e4e8ef;
+  color: #344156;
+  font-size: 10px;
+}
+
+.order-detail-item:last-child {
+  border-bottom: 0;
+}
+
+.order-detail-item span:last-child {
+  white-space: nowrap;
+  text-align: right;
+}
+
+@media (max-width: 760px) {
+  .status-filter {
+    flex: 1;
+    min-width: 0;
   }
 }
 </style>

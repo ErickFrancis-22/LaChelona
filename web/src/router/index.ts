@@ -1,10 +1,13 @@
+
 import { createRouter, createWebHistory } from 'vue-router'
+
 import AdminLayout from '../layouts/AdminLayout.vue'
 import DashboardView from '../views/admin/DashboardView.vue'
 import LoginView from '../LoginView.vue'
 import ClientesView from '../ClientesView.vue'
 import ProductsView from '../views/admin/ProductsView.vue'
 import CategoriesView from '../views/admin/CategoriesView.vue'
+
 const PlaceholderView = {
   template: `
     <section class="placeholder-view">
@@ -50,16 +53,15 @@ const routes = [
       {
         path: 'pedidos',
         name: 'admin-pedidos',
-        component: PlaceholderView,
-        props: { title: 'Pedidos' },
-        meta: { title: 'Pedidos' },
+        component: DashboardView,
+        meta: { title: 'Pedidos del día' },
       },
       {
-  path: 'categorias',
-  name: 'admin-categorias',
-  component: CategoriesView,
-  meta: { title: 'Categorías' },
-},
+        path: 'categorias',
+        name: 'admin-categorias',
+        component: CategoriesView,
+        meta: { title: 'Categorías' },
+      },
       {
         path: 'inventario',
         name: 'admin-inventario',
