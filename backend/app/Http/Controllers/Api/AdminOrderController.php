@@ -6,14 +6,14 @@ use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Services\AdminOrderService;
 use Illuminate\Http\Request;
+use Carbon\CarbonImmutable;
 use Illuminate\Validation\Rule;
 
 class AdminOrderController extends Controller
 {
     public function __construct(
         private AdminOrderService $adminOrderService
-    ) {
-    }
+    ) {}
 
     /**
      * Lista pedidos para administración.
@@ -42,6 +42,27 @@ class AdminOrderController extends Controller
             'search' => ['nullable', 'string', 'max:255'],
         ]);
 
+        // Convertir el día de El Salvador a un intervalo UTC.
+        $inicioUtc = null;
+        $finUtc = null;
+
+        if ($request->filled('date')) {
+            $inicioLocal = CarbonImmutable::parse(
+                $request->date,
+                'America/El_Salvador'
+            )->startOfDay();
+
+            $inicioUtc = $inicioLocal
+                ->setTimezone('UTC')
+                ->format('Y-m-d H:i:s');
+
+            $finUtc = $inicioLocal
+                ->addDay()
+                ->setTimezone('UTC')
+                ->format('Y-m-d H:i:s');
+        }
+
+        // Construcción de la consulta principal
         $query = Order::query()
             ->with([
                 'client:id,business_name,contact_name',
@@ -53,8 +74,9 @@ class AdminOrderController extends Controller
             $query->where('status', $request->status);
         }
 
-        if ($request->filled('date')) {
-            $query->whereDate('created_at', $request->date);
+        if ($inicioUtc !== null) {
+            $query->where('created_at', '>=', $inicioUtc)
+                  ->where('created_at', '<', $finUtc);
         }
 
         if ($request->filled('search')) {
@@ -75,11 +97,15 @@ class AdminOrderController extends Controller
 
         $orders = $query->get();
 
-        $summary = Order::query()
-            ->when(
-                $request->filled('date'),
-                fn ($q) => $q->whereDate('created_at', $request->date)
-            )
+        // Obtención de totales por estado (resumen)
+        $summaryQuery = Order::query();
+
+        if ($inicioUtc !== null) {
+            $summaryQuery->where('created_at', '>=', $inicioUtc)
+                         ->where('created_at', '<', $finUtc);
+        }
+
+        $summary = $summaryQuery
             ->selectRaw('status, COUNT(*) as total')
             ->groupBy('status')
             ->pluck('total', 'status');
