@@ -10,35 +10,37 @@
       </div>
 
       <div class="report-filters">
+        <!-- SELECTOR COMBINADO DE MES Y AÑO -->
         <select
-          v-model.number="selectedMonth"
-          aria-label="Seleccionar mes"
-          @change="loadReport"
+          v-model="selectedPeriod"
+          aria-label="Seleccionar mes y año del reporte"
+          @change="handlePeriodChange"
         >
           <option
-            v-for="month in months"
-            :key="month.value"
-            :value="month.value"
+            v-for="period in periodOptions"
+            :key="period.value"
+            :value="period.value"
           >
-            {{ month.label }} {{ selectedYear }}
+            {{ period.label }}
           </option>
         </select>
 
-        <select
-          v-model.number="selectedYear"
-          aria-label="Seleccionar año"
-          @change="loadReport"
+        <!-- BOTÓN DESCARGAR PDF -->
+        <button
+          type="button"
+          class="pdf-button"
+          :disabled="!report || loading || exportingPdf"
+          @click="downloadReportPdf"
         >
-          <option
-            v-for="year in years"
-            :key="year"
-            :value="year"
-          >
-            {{ year }}
-          </option>
-        </select>
+          <span class="download-icon">↓</span>
+          {{ exportingPdf ? 'Generando PDF...' : 'Descargar PDF' }}
+        </button>
       </div>
     </header>
+
+    <p v-if="pdfErrorMessage" class="pdf-error" role="alert">
+      {{ pdfErrorMessage }}
+    </p>
 
     <!-- CARGANDO -->
     <div
@@ -206,7 +208,9 @@
                           }}
                         </strong>
 
-                        <small v-if="client.business_name && client.contact_name">
+                        <small
+                          v-if="client.business_name && client.contact_name"
+                        >
                           {{ client.contact_name }}
                         </small>
                       </div>
@@ -235,11 +239,14 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import axios from 'axios'
+import { jsPDF } from 'jspdf'
+import autoTable from 'jspdf-autotable'
 
 import {
   obtenerReporteMensual,
   type ReporteMensual,
 } from '../../services/reports'
+
 
 
 const months = [
@@ -261,14 +268,32 @@ const months = [
 
 const currentDate = new Date()
 
-const selectedMonth = ref(currentDate.getMonth() + 1)
-
-const selectedYear = ref(currentDate.getFullYear())
+const selectedPeriod = ref(
+  `${currentDate.getFullYear()}-${String(
+    currentDate.getMonth() + 1,
+  ).padStart(2, '0')}`,
+)
 
 // Laravel acepta años entre 2000 y 2100.
-const years = Array.from(
-  { length: 101 },
-  (_, index) => 2000 + index,
+const periodOptions = Array.from(
+  { length: 101 * 12 },
+  (_, index) => {
+    const year = 2100 - Math.floor(index / 12)
+    const month = 12 - (index % 12)
+
+    return {
+      value: `${year}-${String(month).padStart(2, '0')}`,
+      label: `${months[month - 1]?.label ?? `Mes ${month}`} ${year}`,
+    }
+  },
+)
+
+const selectedYear = computed(() =>
+  Number(selectedPeriod.value.slice(0, 4)),
+)
+
+const selectedMonth = computed(() =>
+  Number(selectedPeriod.value.slice(5, 7)),
 )
 
 const monthName = computed(() => {
@@ -277,15 +302,18 @@ const monthName = computed(() => {
   )?.label ?? ''
 })
 
-// ======================================================
-// DATOS DEL REPORTE
-// ======================================================
+function handlePeriodChange(): void {
+  void loadReport()
+}
+
+
 
 const report = ref<ReporteMensual | null>(null)
 
 const loading = ref(false)
-
 const errorMessage = ref('')
+const pdfErrorMessage = ref('')
+const exportingPdf = ref(false)
 
 let requestId = 0
 
@@ -303,14 +331,208 @@ const noReportData = computed(() => {
 })
 
 
-
-function formatCurrency(value: number | string | null | undefined): string {
+function formatCurrency(
+  value: number | string | null | undefined,
+): string {
   const amount = Number(value ?? 0)
 
   return new Intl.NumberFormat('es-SV', {
     style: 'currency',
     currency: 'USD',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
   }).format(Number.isFinite(amount) ? amount : 0)
+}
+
+
+
+function downloadReportPdf(): void {
+  const currentReport = report.value
+
+  if (!currentReport || loading.value || exportingPdf.value) {
+    return
+  }
+
+  exportingPdf.value = true
+  pdfErrorMessage.value = ''
+
+  try {
+    const pdf = new jsPDF({
+      orientation: 'landscape',
+      unit: 'mm',
+      format: 'a4',
+    })
+
+    pdf.setProperties({
+      title: `Reporte mensual de ventas - ${monthName.value} ${selectedYear.value}`,
+      subject: 'Reporte mensual de ventas',
+      author: 'La Chelona App',
+    })
+
+    // ENCABEZADO
+    pdf.setTextColor(29, 53, 91)
+    pdf.setFont('helvetica', 'bold')
+    pdf.setFontSize(16)
+    pdf.text('LA CHELONA APP', 14, 15)
+
+    pdf.setFontSize(12)
+    pdf.text('REPORTE MENSUAL DE VENTAS', 14, 23)
+
+    pdf.setFont('helvetica', 'normal')
+    pdf.setFontSize(10)
+    pdf.text(`${monthName.value} ${selectedYear.value}`, 14, 30)
+
+    // RESUMEN OFICIAL DE LARAVEL
+    pdf.setDrawColor(226, 231, 239)
+    pdf.setFillColor(255, 255, 255)
+
+    pdf.roundedRect(14, 36, 125, 20, 2, 2, 'FD')
+    pdf.roundedRect(145, 36, 125, 20, 2, 2, 'FD')
+
+    pdf.setFontSize(9)
+    pdf.setTextColor(104, 117, 138)
+
+    pdf.text('Ventas del mes', 19, 43)
+    pdf.text('Pedidos entregados', 150, 43)
+
+    pdf.setFont('helvetica', 'bold')
+    pdf.setFontSize(14)
+    pdf.setTextColor(29, 45, 73)
+
+    pdf.text(
+      formatCurrency(currentReport.summary.total_sales),
+      19,
+      51,
+    )
+
+    pdf.text(
+      String(currentReport.summary.delivered_orders),
+      150,
+      51,
+    )
+
+    // PRODUCTOS MÁS VENDIDOS
+    pdf.setFontSize(12)
+    pdf.setTextColor(29, 53, 91)
+    pdf.text('Productos mas vendidos', 14, 66)
+
+    autoTable(pdf, {
+      startY: 71,
+      margin: { left: 14, right: 14 },
+
+      head: [[
+        'N.º',
+        'Producto',
+        'Codigo',
+        'Cantidad vendida',
+        'Ingresos',
+      ]],
+
+      body: currentReport.top_products.length > 0
+        ? currentReport.top_products.map((product, index) => [
+            String(index + 1),
+            product.name,
+            product.code || '-',
+            String(product.quantity_sold),
+            formatCurrency(product.revenue),
+          ])
+        : [[
+            '',
+            'Sin productos para este periodo',
+            '',
+            '',
+            '',
+          ]],
+
+      theme: 'grid',
+
+      styles: {
+        font: 'helvetica',
+        fontSize: 9,
+        cellPadding: 3,
+        textColor: [52, 65, 86],
+        lineColor: [232, 236, 242],
+      },
+
+      headStyles: {
+        fillColor: [29, 53, 91],
+        textColor: [255, 255, 255],
+        fontStyle: 'bold',
+      },
+    })
+
+    const pdfWithTables = pdf as jsPDF & {
+      lastAutoTable?: { finalY: number }
+    }
+
+    const clientsStartY =
+      (pdfWithTables.lastAutoTable?.finalY ?? 85) + 10
+
+    // CLIENTES CON MÁS COMPRAS
+    pdf.setFontSize(12)
+    pdf.setTextColor(29, 53, 91)
+    pdf.text('Clientes con mas compras', 14, clientsStartY)
+
+    autoTable(pdf, {
+      startY: clientsStartY + 5,
+      margin: { left: 14, right: 14 },
+
+      head: [[
+        'N.º',
+        'Cliente / negocio',
+        'Contacto',
+        'Cantidad de pedidos',
+        'Importe comprado',
+      ]],
+
+      body: currentReport.top_clients.length > 0
+        ? currentReport.top_clients.map((client, index) => [
+            String(index + 1),
+            client.business_name ||
+              client.contact_name ||
+              `Cliente #${client.client_id}`,
+            client.contact_name || '-',
+            String(client.orders_count),
+            formatCurrency(client.total_purchased),
+          ])
+        : [[
+            '',
+            'Sin clientes para este periodo',
+            '',
+            '',
+            '',
+          ]],
+
+      theme: 'grid',
+
+      styles: {
+        font: 'helvetica',
+        fontSize: 9,
+        cellPadding: 3,
+        textColor: [52, 65, 86],
+        lineColor: [232, 236, 242],
+      },
+
+      headStyles: {
+        fillColor: [29, 53, 91],
+        textColor: [255, 255, 255],
+        fontStyle: 'bold',
+      },
+    })
+
+    // DESCARGA CON EL PERIODO SELECCIONADO
+    pdf.save(`reporte-mensual-${selectedPeriod.value}.pdf`)
+
+  } catch (error) {
+    console.error('Error al generar el PDF:', error)
+
+    pdfErrorMessage.value = error instanceof Error
+      ? `No se pudo generar el PDF: ${error.message}`
+      : 'No se pudo generar el archivo PDF.'
+
+  } finally {
+    exportingPdf.value = false
+  }
 }
 
 
@@ -360,12 +582,13 @@ function getErrorMessage(error: unknown): string {
 }
 
 
+
 async function loadReport(): Promise<void> {
   const currentRequest = ++requestId
 
   loading.value = true
-
   errorMessage.value = ''
+  pdfErrorMessage.value = ''
 
   report.value = null
 
@@ -387,14 +610,15 @@ async function loadReport(): Promise<void> {
 
     // Mostrar directamente los agregados de Laravel.
     report.value = response
+
   } catch (error) {
     if (currentRequest !== requestId) {
       return
     }
 
     report.value = null
-
     errorMessage.value = getErrorMessage(error)
+
   } finally {
     if (currentRequest === requestId) {
       loading.value = false
@@ -448,7 +672,7 @@ onMounted(() => {
 }
 
 .report-filters select {
-  min-width: 112px;
+  min-width: 150px;
   padding: 9px 12px;
   background: #ffffff;
   border: 1px solid #e2e7ef;
@@ -461,6 +685,46 @@ onMounted(() => {
 
 .report-filters select:focus {
   border-color: #315d9e;
+}
+
+/* BOTÓN PDF */
+
+.pdf-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 36px;
+  padding: 9px 15px;
+  border: 1px solid #1d355b;
+  border-radius: 8px;
+  background: #1d355b;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 0.2s, opacity 0.2s;
+}
+
+.pdf-button:hover:not(:disabled) {
+  background: #29466f;
+}
+
+.pdf-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.download-icon {
+  font-size: 15px;
+  line-height: 1;
+}
+
+.pdf-error {
+  margin: -8px 0 14px;
+  color: #a12b2b;
+  font-size: 11px;
 }
 
 /* RESUMEN */
@@ -711,7 +975,13 @@ onMounted(() => {
   }
 
   .report-filters {
+    align-items: center;
     flex-wrap: wrap;
+  }
+
+  .report-filters select,
+  .pdf-button {
+    flex: 1;
   }
 
   .summary-grid {
