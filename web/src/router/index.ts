@@ -7,6 +7,7 @@ import LoginView from '../LoginView.vue'
 import ClientesView from '../ClientesView.vue'
 import ProductsView from '../views/admin/ProductsView.vue'
 import CategoriesView from '../views/admin/CategoriesView.vue'
+import ReportsView from '../views/admin/ReportsView.vue'
 
 const PlaceholderView = {
   template: `
@@ -73,9 +74,8 @@ const routes = [
         path: 'reportes',
         alias: 'informes',
         name: 'admin-reportes',
-        component: PlaceholderView,
-        props: { title: 'Reportes' },
-        meta: { title: 'Reportes' },
+        component: ReportsView,
+        meta: { title: 'Reportes mensuales' },
       },
     ],
   },
