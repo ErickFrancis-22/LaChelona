@@ -40,7 +40,7 @@
       {{ errorMensaje }}
     </p>
 
-    <!-- Indicadores principales: valores oficiales -->
+    <!-- Indicadores principales: valores oficiales del reporte -->
     <section class="summary-grid">
       <article class="summary-card">
         <span class="card-label">Ventas del mes</span>
@@ -65,36 +65,22 @@
         <div v-if="loading" class="empty-content" role="status">
           Consultando productos...
         </div>
-
         <div v-else-if="!reporte" class="empty-content">
           Genera el reporte para consultar los productos vendidos.
         </div>
-
         <div v-else-if="reporte.top_products.length === 0" class="empty-content">
           No hay productos vendidos para este periodo.
         </div>
-
         <div v-else class="report-list">
           <div
             v-for="(producto, index) in reporte.top_products"
             :key="producto.product_id"
             class="report-row"
           >
-            <span class="ranking product-ranking">
-              {{ index + 1 }}
-            </span>
-
-            <strong class="row-name">
-              {{ producto.name }}
-            </strong>
-
-            <span class="row-quantity">
-              {{ producto.quantity_sold }}
-            </span>
-
-            <strong class="row-amount">
-              {{ formatCurrency(producto.revenue) }}
-            </strong>
+            <span class="ranking product-ranking">{{ index + 1 }}</span>
+            <strong class="row-name">{{ producto.name }}</strong>
+            <span class="row-quantity">{{ producto.quantity_sold }} unidades</span>
+            <strong class="row-amount">{{ formatCurrency(producto.revenue) }}</strong>
           </div>
         </div>
       </article>
@@ -105,41 +91,26 @@
         <div v-if="loading" class="empty-content" role="status">
           Consultando clientes...
         </div>
-
         <div v-else-if="!reporte" class="empty-content">
           Genera el reporte para consultar las compras de clientes.
         </div>
-
         <div v-else-if="reporte.top_clients.length === 0" class="empty-content">
           No hay clientes registrados para este periodo.
         </div>
-
         <div v-else class="report-list">
           <div
             v-for="(cliente, index) in reporte.top_clients"
             :key="cliente.client_id"
             class="report-row"
           >
-            <span class="ranking client-ranking">
-              {{ index + 1 }}
-            </span>
-
+            <span class="ranking client-ranking">{{ index + 1 }}</span>
             <strong class="row-name">
-              {{
-                cliente.business_name ||
-                cliente.contact_name ||
-                `Cliente #${cliente.client_id}`
-              }}
+              {{ cliente.business_name || cliente.contact_name || `Cliente #${cliente.client_id}` }}
             </strong>
-
             <span class="row-quantity">
-              {{ cliente.orders_count }}
-              {{ cliente.orders_count === 1 ? 'pedido' : 'pedidos' }}
+              {{ cliente.orders_count }} {{ cliente.orders_count === 1 ? 'pedido' : 'pedidos' }}
             </span>
-
-            <strong class="row-amount">
-              {{ formatCurrency(cliente.total_purchased) }}
-            </strong>
+            <strong class="row-amount">{{ formatCurrency(cliente.total_purchased) }}</strong>
           </div>
         </div>
       </article>
@@ -150,7 +121,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import axios from 'axios'
-
 import {
   obtenerReporteMensual,
   type ReporteMensual,
@@ -171,21 +141,30 @@ const meses = [
   'Diciembre',
 ]
 
-// Se conserva septiembre de 2026 como periodo inicial del diseño.
-const periodo = ref('2026-09')
+// El reporte inicia automáticamente en el mes y año actuales del navegador.
+// El selector sigue permitiendo consultar cualquier otro periodo disponible.
+const fechaActual = new Date()
+const periodo = ref(
+  `${fechaActual.getFullYear()}-${String(fechaActual.getMonth() + 1).padStart(2, '0')}`,
+)
 
-// Laravel admite años entre 2000 y 2100.
-// El selector combina mes y año para conservar un solo control.
-const periodos = Array.from({ length: 101 * 12 }, (_, index) => {
-  const year = 2100 - Math.floor(index / 12)
-  const month = 12 - (index % 12)
-  const mes = String(month).padStart(2, '0')
+// El selector solo muestra periodos desde enero de 2026 hasta diciembre de 2100.
+// Se ordena de forma ascendente para encontrar primero 2026 y avanzar hacia años futuros.
+const anioInicial = 2026
+const anioFinal = 2100
+const periodos = Array.from(
+  { length: (anioFinal - anioInicial + 1) * 12 },
+  (_, index) => {
+    const year = anioInicial + Math.floor(index / 12)
+    const month = (index % 12) + 1
+    const mes = String(month).padStart(2, '0')
 
-  return {
-    value: `${year}-${mes}`,
-    label: `${meses[month - 1]} ${year}`,
-  }
-})
+    return {
+      value: `${year}-${mes}`,
+      label: `${meses[month - 1]} ${year}`,
+    }
+  },
+)
 
 const anio = computed(() => Number(periodo.value.slice(0, 4)))
 const mes = computed(() => Number(periodo.value.slice(5, 7)))
@@ -194,10 +173,10 @@ const nombreMes = computed(() => meses[mes.value - 1] ?? '')
 const reporte = ref<ReporteMensual | null>(null)
 const loading = ref(false)
 const errorMensaje = ref('')
-
 let requestId = 0
 
-// Al cambiar el periodo, se limpia el reporte anterior.
+// Al cambiar el periodo, se limpia el reporte anterior para no mostrar
+// cifras de un mes distinto antes de pulsar Generar.
 watch(periodo, () => {
   reporte.value = null
   errorMensaje.value = ''
@@ -217,22 +196,14 @@ function formatCurrency(value: number | string): string {
 function getErrorMessage(error: unknown): string {
   if (axios.isAxiosError(error)) {
     const data = error.response?.data as
-      | {
-          message?: string
-          errors?: Record<string, string[]>
-        }
+      | { message?: string; errors?: Record<string, string[]> }
       | undefined
 
-    if (data?.message) {
-      return data.message
-    }
+    if (data?.message) return data.message
 
     if (data?.errors) {
       const firstError = Object.values(data.errors).flat()[0]
-
-      if (firstError) {
-        return firstError
-      }
+      if (firstError) return firstError
     }
 
     if (error.response?.status === 401) {
@@ -267,12 +238,9 @@ async function generarReporte(): Promise<void> {
   reporte.value = null
 
   try {
-    // Laravel entrega las cifras agregadas.
-    // Vue no descarga pedidos ni calcula ventas, cantidades o importes.
-    const respuesta = await obtenerReporteMensual(
-      anio.value,
-      mes.value,
-    )
+    // El backend entrega las cifras agregadas. Vue no descarga pedidos
+    // ni calcula ventas, cantidades o importes.
+    const respuesta = await obtenerReporteMensual(anio.value, mes.value)
 
     if (currentRequest !== requestId) return
 

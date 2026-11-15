@@ -205,6 +205,36 @@
                 <strong>Referencia:</strong>
                 {{ orderDetail.delivery_reference }}
               </p>
+
+              <!-- El comprobante se integra al final del detalle del pedido. -->
+              <div v-if="canShowInvoice(order.status)" class="invoice-action">
+                <p
+                  v-if="invoiceErrors[order.id]"
+                  class="invoice-inline-error"
+                  role="alert"
+                >
+                  {{ invoiceErrors[order.id] }}
+                </p>
+
+                <button
+                  type="button"
+                  class="order-button invoice-button"
+                  :disabled="
+                    invoiceLoadingOrderId === order.id ||
+                    invoiceStates[order.id] === 'checking'
+                  "
+                  @click="handleInvoice(order.id)"
+                >
+                  {{ invoiceButtonLabel(order.id) }}
+                </button>
+              </div>
+
+              <p
+                v-else-if="order.status === 'Pendientes' || order.status === 'Cancelados'"
+                class="invoice-unavailable"
+              >
+                El comprobante estará disponible cuando el pedido sea confirmado.
+              </p>
             </template>
           </div>
         </article>
@@ -218,12 +248,128 @@
       </section>
     </div>
 
+    <!-- Ventana para consultar el comprobante oficial de Laravel. -->
+    <div
+      v-if="invoiceModalOpen && currentInvoice"
+      class="invoice-overlay"
+      @click.self="closeInvoiceModal"
+    >
+      <section
+        class="invoice-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="invoice-modal-title"
+      >
+        <header class="invoice-modal-header">
+          <div>
+            <p class="invoice-eyebrow">LA CHELONA APP</p>
+            <h3 id="invoice-modal-title">Comprobante interno</h3>
+          </div>
+          <button
+            type="button"
+            class="invoice-close-button"
+            aria-label="Cerrar comprobante"
+            @click="closeInvoiceModal"
+          >
+            ×
+          </button>
+        </header>
+
+        <div class="invoice-modal-body">
+          <div class="invoice-meta-grid">
+            <div class="invoice-meta-item">
+              <span>Número de comprobante</span>
+              <strong>{{ currentInvoice.invoice_number }}</strong>
+            </div>
+            <div class="invoice-meta-item">
+              <span>Fecha de emisión</span>
+              <strong>{{ formatInvoiceDate(currentInvoice.issue_date) }}</strong>
+            </div>
+            <div class="invoice-meta-item">
+              <span>Pedido</span>
+              <strong>#{{ currentInvoice.order_id }}</strong>
+            </div>
+          </div>
+
+          <div class="invoice-client-block">
+            <h4>Cliente</h4>
+            <strong>
+              {{
+                currentInvoice.order?.client?.business_name ||
+                currentInvoice.order?.client?.contact_name ||
+                orderDetail?.client?.business_name ||
+                orderDetail?.client?.contact_name ||
+                'Cliente no especificado'
+              }}
+            </strong>
+            <p v-if="currentInvoice.order?.client?.contact_name || orderDetail?.client?.contact_name">
+              Contacto: {{ currentInvoice.order?.client?.contact_name || orderDetail?.client?.contact_name }}
+            </p>
+            <p v-if="currentInvoice.order?.client?.phone || orderDetail?.client?.phone">
+              Teléfono: {{ currentInvoice.order?.client?.phone || orderDetail?.client?.phone }}
+            </p>
+            <p v-if="currentInvoice.order?.client?.email || orderDetail?.client?.email">
+              Correo: {{ currentInvoice.order?.client?.email || orderDetail?.client?.email }}
+            </p>
+          </div>
+
+          <div class="invoice-products-section">
+            <h4>Productos del comprobante</h4>
+            <div class="invoice-table-wrapper">
+              <table class="invoice-table">
+                <thead>
+                  <tr>
+                    <th>Producto</th>
+                    <th>Cantidad</th>
+                    <th>Precio unitario</th>
+                    <th>Subtotal</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr
+                    v-for="item in (currentInvoice.order?.details?.length ? currentInvoice.order.details : (orderDetail?.details || []))"
+                    :key="item.id"
+                  >
+                    <td>{{ item.product?.name || `Producto #${item.product_id}` }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>{{ formatInvoiceCurrency(item.unit_price) }}</td>
+                    <td>{{ formatInvoiceCurrency(item.subtotal) }}</td>
+                  </tr>
+                  <tr
+                    v-if="!(currentInvoice.order?.details?.length || orderDetail?.details?.length)"
+                  >
+                    <td colspan="4" class="invoice-empty-details">
+                      Laravel no devolvió los productos del comprobante.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="invoice-total-row">
+            <span>Total oficial</span>
+            <strong>{{ formatInvoiceCurrency(currentInvoice.total) }}</strong>
+          </div>
+
+          <p class="invoice-note">
+            Número, fecha y total proporcionados por Laravel.
+          </p>
+        </div>
+      </section>
+    </div>
   </section>
 </template>
 
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import axios from 'axios'
+
+import {
+  generarComprobante,
+  obtenerComprobante,
+  type Comprobante,
+} from '../../services/invoices'
 
 import {
   listarPedidos,
@@ -304,6 +450,16 @@ const orderDetail = ref<PedidoDetalle | null>(null)
 const detailLoading = ref(false)
 
 const detailError = ref('')
+
+type InvoiceState = 'checking' | 'missing' | 'exists' | 'error'
+type InvoiceAction = 'generate' | 'view' | null
+
+const invoiceStates = ref<Record<number, InvoiceState>>({})
+const invoiceErrors = ref<Record<number, string>>({})
+const invoiceLoadingOrderId = ref<number | null>(null)
+const invoiceAction = ref<InvoiceAction>(null)
+const invoiceModalOpen = ref(false)
+const currentInvoice = ref<Comprobante | null>(null)
 
 let detailRequestId = 0
 
@@ -444,6 +600,209 @@ function getErrorMessage(error: unknown): string {
     ? error.message
     : 'Ocurrió un error inesperado.'
 }
+
+function canShowInvoice(status: OrderStatus): boolean {
+  // Laravel no permite generar comprobantes para pedidos pendientes o cancelados.
+  return status === 'Confirmados' || status === 'En camino' || status === 'Entregados'
+}
+
+function invoiceErrorText(error: unknown): string {
+  if (axios.isAxiosError(error)) {
+    const data = error.response?.data as {
+      message?: string
+      errors?: Record<string, string[] | string>
+    } | undefined
+
+    if (data?.errors) {
+      for (const value of Object.values(data.errors)) {
+        const first = Array.isArray(value) ? value[0] : value
+        if (typeof first === 'string' && first.trim()) return first
+      }
+    }
+
+    if (data?.message) return data.message
+  }
+
+  return getErrorMessage(error)
+}
+
+function isInvoiceMissingError(error: unknown): boolean {
+  if (!axios.isAxiosError(error)) return false
+
+  const status = error.response?.status
+  const data = error.response?.data as {
+    message?: string
+    errors?: Record<string, unknown>
+  } | undefined
+  const fieldErrors = data?.errors ?? {}
+  const messages = [data?.message, ...Object.values(fieldErrors).flatMap((value) =>
+    Array.isArray(value) ? value : [value],
+  )]
+    .filter((value): value is string => typeof value === 'string')
+    .join(' ')
+    .toLowerCase()
+
+  if (status === 404) {
+    return messages.includes('comprobante') || messages.includes('invoice')
+  }
+
+  if (status === 422) {
+    return (
+      Object.prototype.hasOwnProperty.call(fieldErrors, 'invoice') ||
+      messages.includes('no posee un comprobante') ||
+      messages.includes('no tiene un comprobante') ||
+      messages.includes('no existe el comprobante') ||
+      messages.includes('comprobante no encontrado') ||
+      messages.includes('invoice not found') ||
+      messages.includes('does not have an invoice')
+    )
+  }
+
+  return false
+}
+
+function isInvoiceAlreadyExistsError(error: unknown): boolean {
+  if (!axios.isAxiosError(error)) return false
+
+  const status = error.response?.status
+  if (status !== 409 && status !== 422) return false
+
+  const data = error.response?.data as {
+    message?: string
+    errors?: Record<string, unknown>
+  } | undefined
+  const messages = [data?.message, ...Object.values(data?.errors ?? {}).flatMap((value) =>
+    Array.isArray(value) ? value : [value],
+  )]
+    .filter((value): value is string => typeof value === 'string')
+    .join(' ')
+    .toLowerCase()
+
+  return (
+    messages.includes('ya posee un comprobante') ||
+    messages.includes('ya tiene un comprobante') ||
+    messages.includes('comprobante ya existe') ||
+    messages.includes('invoice already exists')
+  )
+}
+
+function invoiceButtonLabel(orderId: number): string {
+  if (invoiceLoadingOrderId.value === orderId) {
+    return invoiceAction.value === 'generate'
+      ? 'Generando comprobante...'
+      : 'Consultando comprobante...'
+  }
+  if (invoiceStates.value[orderId] === 'checking') return 'Verificando comprobante...'
+  if (invoiceStates.value[orderId] === 'exists') return 'Ver comprobante'
+  if (invoiceStates.value[orderId] === 'error') return 'Reintentar verificación'
+  return 'Generar comprobante'
+}
+
+async function checkInvoice(orderId: number): Promise<void> {
+  invoiceStates.value[orderId] = 'checking'
+  delete invoiceErrors.value[orderId]
+
+  try {
+    await obtenerComprobante(orderId)
+    invoiceStates.value[orderId] = 'exists'
+  } catch (error) {
+    if (isInvoiceMissingError(error)) {
+      invoiceStates.value[orderId] = 'missing'
+    } else {
+      invoiceStates.value[orderId] = 'error'
+      invoiceErrors.value[orderId] = invoiceErrorText(error)
+    }
+  }
+}
+
+async function handleInvoice(orderId: number): Promise<void> {
+  if (invoiceLoadingOrderId.value !== null) return
+
+  const order = orders.value.find((item) => item.id === orderId)
+  if (!order || !canShowInvoice(order.status)) return
+
+  const state = invoiceStates.value[orderId]
+
+  // Si no se pudo verificar, volver a consultar GET. No generar a ciegas.
+  if (!state || state === 'checking' || state === 'error') {
+    await checkInvoice(orderId)
+    return
+  }
+
+  invoiceLoadingOrderId.value = orderId
+  invoiceAction.value = state === 'exists' ? 'view' : 'generate'
+  delete invoiceErrors.value[orderId]
+
+  try {
+    if (state === 'exists') {
+      // Consultar el comprobante ya guardado; GET no genera ni modifica datos.
+      currentInvoice.value = await obtenerComprobante(orderId)
+      invoiceModalOpen.value = true
+      return
+    }
+
+    // Si no existe, se ejecuta directamente el POST de generación.
+    currentInvoice.value = await generarComprobante(orderId)
+    invoiceStates.value[orderId] = 'exists'
+    invoiceModalOpen.value = true
+  } catch (error) {
+    if (isInvoiceAlreadyExistsError(error)) {
+      // Evita duplicados: recupera el registro oficial que ya existe.
+      try {
+        currentInvoice.value = await obtenerComprobante(orderId)
+        invoiceStates.value[orderId] = 'exists'
+        invoiceModalOpen.value = true
+      } catch (queryError) {
+        invoiceStates.value[orderId] = 'error'
+        invoiceErrors.value[orderId] = invoiceErrorText(queryError)
+      }
+    } else if (isInvoiceMissingError(error)) {
+      invoiceStates.value[orderId] = 'missing'
+      invoiceErrors.value[orderId] = 'Todavía no existe un comprobante para este pedido.'
+    } else {
+      invoiceStates.value[orderId] = 'error'
+      invoiceErrors.value[orderId] = invoiceErrorText(error)
+    }
+  } finally {
+    invoiceLoadingOrderId.value = null
+    invoiceAction.value = null
+  }
+}
+
+function closeInvoiceModal(): void {
+  invoiceModalOpen.value = false
+  currentInvoice.value = null
+}
+
+function formatInvoiceCurrency(value: number | string | null | undefined): string {
+  const amount = Number(value)
+  if (!Number.isFinite(amount)) return '—'
+
+  return new Intl.NumberFormat('es-SV', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(amount)
+}
+
+function formatInvoiceDate(value: string | null | undefined): string {
+  if (!value) return '—'
+
+  // Evita que una fecha ISO sin hora cambie al día anterior por la zona horaria.
+  const dateOnly = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value)
+  const date = dateOnly
+    ? new Date(Number(dateOnly[1]), Number(dateOnly[2]) - 1, Number(dateOnly[3]))
+    : new Date(value)
+
+  if (Number.isNaN(date.getTime())) return value
+
+  return new Intl.DateTimeFormat('es-SV', {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+  }).format(date)
+}
+
 
 
 async function loadOrders(): Promise<void> {
@@ -600,6 +959,10 @@ async function toggleOrderDetail(id: number): Promise<void> {
     }
 
     orderDetail.value = detail
+
+    if (canShowInvoice(orders.value.find((item) => item.id === id)?.status ?? 'Pendientes')) {
+      void checkInvoice(id)
+    }
   } catch (error) {
     if (
       requestId !== detailRequestId ||
@@ -1106,6 +1469,214 @@ onBeforeUnmount(() => {
   .status-filter {
     flex: 1;
     min-width: 0;
+  }
+}
+
+.invoice-action {
+  margin-top: 12px;
+  padding-top: 9px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.order-button.invoice-button {
+  margin-top: 4px;
+  background: #315d9e;
+  color: #fff;
+}
+
+.invoice-inline-error {
+  margin: 3px 0 7px !important;
+  color: #a12b2b !important;
+  font-size: 10px !important;
+}
+
+.invoice-unavailable {
+  margin-top: 11px !important;
+  padding-top: 9px;
+  border-top: 1px solid #e2e8f0;
+  color: #748196 !important;
+  font-size: 10px !important;
+}
+
+.invoice-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(15, 23, 42, 0.58);
+}
+
+.invoice-modal {
+  width: min(760px, 100%);
+  max-height: 90vh;
+  overflow: auto;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 22px 65px rgba(15, 23, 42, 0.25);
+}
+
+.invoice-modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 22px;
+  border-bottom: 1px solid #e7eaf0;
+}
+
+.invoice-eyebrow {
+  margin: 0 0 5px;
+  color: #8995a8;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+}
+
+.invoice-modal-header h3 {
+  margin: 0;
+  color: #1d2d49;
+  font-size: 19px;
+}
+
+.invoice-close-button {
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 7px;
+  background: #eef2f7;
+  color: #344156;
+  font-size: 23px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.invoice-modal-body {
+  padding: 20px 22px;
+}
+
+.invoice-meta-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.invoice-meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 11px;
+  border: 1px solid #e7eaf0;
+  border-radius: 8px;
+}
+
+.invoice-meta-item span {
+  color: #8490a2;
+  font-size: 10px;
+}
+
+.invoice-meta-item strong {
+  color: #1d2d49;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+.invoice-client-block {
+  margin-bottom: 18px;
+  padding: 13px;
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.invoice-client-block h4,
+.invoice-products-section h4 {
+  margin: 0 0 9px;
+  color: #344156;
+  font-size: 12px;
+}
+
+.invoice-client-block strong {
+  color: #1d2d49;
+  font-size: 12px;
+}
+
+.invoice-client-block p {
+  margin: 5px 0 0;
+  color: #68758a;
+  font-size: 11px;
+}
+
+.invoice-table-wrapper {
+  overflow-x: auto;
+}
+
+.invoice-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+}
+
+.invoice-table th,
+.invoice-table td {
+  padding: 10px 8px;
+  border-bottom: 1px solid #e7eaf0;
+  text-align: left;
+}
+
+.invoice-table th {
+  color: #68758a;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.invoice-table td {
+  color: #344156;
+}
+
+.invoice-empty-details {
+  color: #8490a2 !important;
+  text-align: center !important;
+}
+
+.invoice-total-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-top: 18px;
+  padding: 14px;
+  border-radius: 8px;
+  background: #f2f5fa;
+  color: #344156;
+  font-size: 12px;
+}
+
+.invoice-total-row strong {
+  color: #1d2d49;
+  font-size: 18px;
+}
+
+.invoice-note {
+  margin: 12px 0 0;
+  color: #8490a2;
+  font-size: 10px;
+  text-align: right;
+}
+
+@media (max-width: 540px) {
+  .invoice-overlay {
+    padding: 10px;
+  }
+
+  .invoice-modal-header,
+  .invoice-modal-body {
+    padding: 15px;
+  }
+
+  .invoice-meta-grid {
+    grid-template-columns: 1fr;
   }
 }
 
