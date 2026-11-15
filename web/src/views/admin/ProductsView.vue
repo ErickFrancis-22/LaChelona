@@ -114,10 +114,15 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { useProducts } from '../../composables/useProducts'
+import { computed, ref, watch, onMounted } from 'vue'
 import ProductTable from '../../components/products/ProductTable.vue'
 import ProductForm from '../../components/products/ProductForm.vue'
 import { useCategories } from '../../composables/useCategories'
+
+onMounted(() => {
+  loadProducts()
+})
 
 const { categories: categoryRecords } = useCategories()
 
@@ -138,15 +143,25 @@ interface Product {
   stock: number
   minStock: number
   image: string | null
+  imageFile?: File | null
   active: boolean
 }
 
 type ProductFormData = Omit<Product, 'id'> & {
   id?: number
+  imageFile?: File | null
 }
 
 
-const products = ref<Product[]>([])
+const {
+  products,
+  loading,
+  errorMessage,
+  loadProducts,
+  createProduct,
+  updateProduct,
+  updateProductStatus,
+} = useProducts()
 
 const search = ref('')
 const selectedCategory = ref('Todas')
@@ -158,10 +173,6 @@ const showForm = ref(false)
 const editingProduct = ref<Product | null>(null)
 
 const saving = ref(false)
-const loading = ref(false)
-const errorMessage = ref('')
-
-let nextProductId = 1
 
 const filteredProducts = computed(() => {
   const term = search.value.toLowerCase().trim()
@@ -240,44 +251,68 @@ function closeForm() {
   editingProduct.value = null
 }
 
-function saveProduct(data: ProductFormData) {
+async function saveProduct(data: ProductFormData) {
   saving.value = true
+  errorMessage.value = ''
 
   try {
+    const categoryRecord = categoryRecords.value.find(
+      category => category.name === data.category
+    )
+
+    if (!categoryRecord) {
+      throw new Error('Selecciona una categoría válida.')
+    }
+
+    const payload = {
+      category_id: categoryRecord.id,
+      name: data.name,
+      code: data.code,
+      package_type: data.packageType,
+      units_per_package: data.unitsPerPackage,
+      description: data.description,
+      sale_price: data.price,
+      stock: data.stock,
+      minimum_stock: data.minStock,
+      image: data.imageFile ?? null,
+      active: data.active,
+    }
+
     const productId = data.id ?? editingProduct.value?.id
 
     if (productId !== undefined) {
-      const index = products.value.findIndex(
-        (product) => product.id === productId
-      )
-
-      if (index !== -1) {
-        products.value[index] = {
-          ...data,
-          id: productId,
-        }
-      }
+      await updateProduct(productId, payload)
     } else {
-      products.value.push({
-        ...data,
-        id: nextProductId++,
-      })
+      await createProduct(payload)
     }
 
     closeForm()
+
+  } catch (error: any) {
+    errorMessage.value =
+      error.response?.data?.message ||
+      error.message ||
+      'No se pudo guardar el producto.'
+
+    console.error('Error guardando producto:', error)
+
   } finally {
     saving.value = false
   }
 }
-
-function toggleProduct(id: number) {
+async function toggleProduct(id: number) {
   const product = products.value.find(
-    (item) => item.id === id
+    item => item.id === id
   )
 
   if (!product) return
 
-  product.active = !product.active
+  try {
+    await updateProductStatus(id, !product.active)
+
+  } catch (error) {
+    console.error('Error cambiando estado:', error)
+  }
 }
 </script>
 

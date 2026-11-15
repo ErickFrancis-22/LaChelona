@@ -175,6 +175,7 @@ interface ProductFormData {
   stock: number
   minStock: number
   image: string | null
+  imageFile?: File | null
   active: boolean
 }
 
@@ -200,6 +201,7 @@ const emptyForm = (): ProductFormData => ({
   stock: 0,
   minStock: 0,
   image: null,
+  imageFile: null,
   active: true,
 })
 
@@ -212,8 +214,8 @@ watch(
   () => props.product,
   (product) => {
     form.value = product
-      ? { ...product }
-      : emptyForm()
+  ? { ...product, imageFile: null }
+  : emptyForm()
 
     preview.value = product?.image || null
   },
@@ -243,7 +245,9 @@ function handleImage(event: Event) {
   }
 
   preview.value = URL.createObjectURL(file)
+
   form.value.image = preview.value
+  form.value.imageFile = file
 }
 
 function saveProduct() {
