@@ -9,7 +9,7 @@
       </div>
     </div>
 
-    
+
       <div class="image-section">
         <label>Imagen del producto</label>
 
@@ -101,7 +101,7 @@
           placeholder=" ingrese la descripción del producto"
         ></textarea>
       </div>
-    
+
 
     <div class="stock-section">
       <h3>Precio y stock</h3>
@@ -119,13 +119,23 @@
         </div>
 
         <div class="field">
-          <label>Stock inicial (cajas) *</label>
-          <input
-            v-model.number="form.stock"
-            type="number"
-            min="0"
-            required
-          />
+
+<label>
+  {{ isEditing ? 'Stock actual (cajas)' : 'Stock inicial (cajas) *' }}
+</label>
+
+<input
+  v-model.number="form.stock"
+  type="number"
+  min="0"
+  :disabled="isEditing"
+  :required="!isEditing"
+/>
+
+<small v-if="isEditing" class="helper">
+  Las existencias se modifican desde el módulo de inventario.
+</small>
+
         </div>
 
         <div class="field">
