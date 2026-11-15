@@ -1,94 +1,69 @@
-
 import api from './api'
-
-export interface ClienteComprobante {
-  id?: number
-  business_name?: string | null
-  contact_name?: string | null
-  phone?: string | null
-  email?: string | null
-  address?: string | null
-}
-
-
-
-export interface ProductoComprobante {
-  id: number
-  code?: string | null
-  name?: string | null
-  description?: string | null
-  package_type?: string | null
-  units_per_package?: number | null
-  sale_price?: number | string | null
-}
-
-
-
-export interface DetalleComprobante {
-  id: number
-  order_id: number
-  product_id: number
-  quantity: number
-  unit_price: number | string
-  subtotal: number | string
-  item_comment?: string | null
-  product?: ProductoComprobante | null
-}
-
-
-
-export interface PedidoComprobante {
-  id: number
-  status?: string
-  total: number | string
-  created_at?: string
-  customer_comment?: string | null
-
-  client?: ClienteComprobante | null
-
-  details?: DetalleComprobante[]
-}
-
-
+import type { PedidoDetalle } from './orders'
 
 export interface Comprobante {
-  id: number
-  order_id: number
+  id?: number
   invoice_number: string
+  order_id: number
   issue_date: string
   total: number | string
-  created_at?: string
-
-  order?: PedidoComprobante
+  order?: PedidoDetalle | null
 }
 
-
-
-export interface RespuestaComprobante<T> {
-  message?: string
-  data: T
+function esRegistro(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
+function extraerComprobante(payload: unknown): Comprobante {
+  let resultado: unknown = payload
 
+  // Laravel puede responder directamente o dentro de { data: ... }.
+  // Se admiten hasta dos envoltorios para soportar Resource + respuesta estándar.
+  for (let nivel = 0; nivel < 2; nivel += 1) {
+    if (esRegistro(resultado) && esRegistro(resultado.data)) {
+      resultado = resultado.data
+    } else {
+      break
+    }
+  }
 
-export async function generarComprobante(
-  orderId: number,
-): Promise<RespuestaComprobante<Comprobante>> {
-  const response = await api.post<RespuestaComprobante<Comprobante>>(
-    `/admin/orders/${orderId}/invoice`,
-  )
+  if (
+    !esRegistro(resultado) ||
+    typeof resultado.invoice_number !== 'string' ||
+    (typeof resultado.order_id !== 'number' &&
+      typeof resultado.order_id !== 'string') ||
+    typeof resultado.issue_date !== 'string' ||
+    (typeof resultado.total !== 'number' &&
+      typeof resultado.total !== 'string')
+  ) {
+    throw new Error(
+      'Laravel no devolvió la estructura esperada del comprobante: invoice_number, order_id, issue_date y total.',
+    )
+  }
 
-  return response.data
+  return resultado as unknown as Comprobante
 }
 
-
-
+// Consulta el comprobante existente de un pedido.
+// No genera ni modifica datos.
 export async function obtenerComprobante(
-  orderId: number,
-): Promise<RespuestaComprobante<Comprobante>> {
-  const response = await api.get<RespuestaComprobante<Comprobante>>(
-    `/admin/orders/${orderId}/invoice`,
+  id: number,
+): Promise<Comprobante> {
+  const response = await api.get<unknown>(
+    `/admin/orders/${id}/invoice`,
   )
 
-  return response.data
+  return extraerComprobante(response.data)
+}
+
+// Solicita a Laravel la generación del comprobante.
+// Laravel valida el estado del pedido y evita la creación de duplicados.
+export async function generarComprobante(
+  id: number,
+): Promise<Comprobante> {
+  const response = await api.post<unknown>(
+    `/admin/orders/${id}/invoice`,
+  )
+
+  return extraerComprobante(response.data)
 }

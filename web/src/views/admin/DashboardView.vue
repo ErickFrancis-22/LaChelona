@@ -217,6 +217,7 @@
         </p>
       </section>
     </div>
+
   </section>
 </template>
 
@@ -238,7 +239,6 @@ import {
 } from '../../services/orders'
 
 
-
 type OrderStatus =
   | 'Pendientes'
   | 'Confirmados'
@@ -255,8 +255,6 @@ interface Order {
   status: OrderStatus
 }
 
-
-
 function getLocalDate(): string {
   const date = new Date()
 
@@ -268,7 +266,6 @@ function getLocalDate(): string {
 }
 
 const todayDate = getLocalDate()
-
 
 
 const selectedDate = ref('')
@@ -287,7 +284,6 @@ const fechaActual = computed(() =>
 )
 
 
-
 const search = ref('')
 
 const orders = ref<Order[]>([])
@@ -299,7 +295,6 @@ const loading = ref(true)
 const errorMessage = ref('')
 
 const processingOrderId = ref<number | null>(null)
-
 
 
 const selectedOrderId = ref<number | null>(null)
@@ -324,7 +319,6 @@ const columns: { status: OrderStatus; color: string }[] = [
   { status: 'Entregados', color: 'gray-dot' },
   { status: 'Cancelados', color: 'red-dot' },
 ]
-
 
 
 const apiStatusByLabel: Record<OrderStatus, EstadoPedido> = {
@@ -368,7 +362,6 @@ function normalizeStatus(status: string): OrderStatus {
 }
 
 
-
 function formatTime(value: string): string {
   const date = new Date(value)
 
@@ -381,7 +374,6 @@ function formatTime(value: string): string {
     minute: '2-digit',
   }).format(date)
 }
-
 
 
 function mapOrder(item: PedidoListado): Order {
@@ -406,7 +398,6 @@ function mapOrder(item: PedidoListado): Order {
     status: normalizeStatus(item.status),
   }
 }
-
 
 
 function getErrorMessage(error: unknown): string {
@@ -453,7 +444,6 @@ function getErrorMessage(error: unknown): string {
     ? error.message
     : 'Ocurrió un error inesperado.'
 }
-
 
 
 async function loadOrders(): Promise<void> {
@@ -508,7 +498,6 @@ async function loadOrders(): Promise<void> {
 }
 
 
-
 const summaries = computed(() =>
   columns.map((column) => {
     const status = apiStatusByLabel[column.status]
@@ -530,13 +519,11 @@ const summaries = computed(() =>
 )
 
 
-
 function filteredOrders(status: OrderStatus): Order[] {
   return orders.value.filter(
     (order) => order.status === status,
   )
 }
-
 
 
 function openDatePicker(): void {
@@ -560,7 +547,6 @@ function handleDateChange(event: Event): void {
 }
 
 
-
 watch(search, () => {
   if (searchTimer) {
     clearTimeout(searchTimer)
@@ -570,7 +556,6 @@ watch(search, () => {
     void loadOrders()
   }, 350)
 })
-
 
 
 async function toggleOrderDetail(id: number): Promise<void> {
@@ -630,7 +615,6 @@ async function toggleOrderDetail(id: number): Promise<void> {
     }
   }
 }
-
 
 
 async function changeStatus(orderId: number): Promise<void> {
@@ -694,7 +678,6 @@ async function changeStatus(orderId: number): Promise<void> {
     processingOrderId.value = null
   }
 }
-
 
 
 onMounted(() => {
@@ -1125,4 +1108,5 @@ onBeforeUnmount(() => {
     min-width: 0;
   }
 }
+
 </style>
