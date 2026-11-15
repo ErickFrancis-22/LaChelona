@@ -7,6 +7,7 @@ import LoginView from '../LoginView.vue'
 import ClientesView from '../ClientesView.vue'
 import ProductsView from '../views/admin/ProductsView.vue'
 import CategoriesView from '../views/admin/CategoriesView.vue'
+import MiCuentaView from '../views/admin/MiCuentaView.vue'
 
 const PlaceholderView = {
   template: `
@@ -23,45 +24,61 @@ const routes = [
     path: '/',
     redirect: '/login',
   },
+
+  // Inicio de sesión
   {
     path: '/login',
     name: 'login',
     component: LoginView,
   },
+
+  // Módulo administrativo
   {
     path: '/admin',
     component: AdminLayout,
     children: [
+
+      // Dashboard
       {
         path: '',
         name: 'admin-dashboard',
         component: DashboardView,
         meta: { title: 'Panel administrativo' },
       },
+
+      // Clientes
       {
         path: 'clientes',
         name: 'admin-clientes',
         component: ClientesView,
         meta: { title: 'Clientes' },
       },
+
+      // Productos
       {
         path: 'productos',
         name: 'admin-productos',
         component: ProductsView,
         meta: { title: 'Productos' },
       },
+
+      // Pedidos
       {
         path: 'pedidos',
         name: 'admin-pedidos',
         component: DashboardView,
         meta: { title: 'Pedidos del día' },
       },
+
+      // Categorías
       {
         path: 'categorias',
         name: 'admin-categorias',
         component: CategoriesView,
         meta: { title: 'Categorías' },
       },
+
+      // Inventario
       {
         path: 'inventario',
         name: 'admin-inventario',
@@ -69,6 +86,8 @@ const routes = [
         props: { title: 'Inventario' },
         meta: { title: 'Inventario' },
       },
+
+      // Reportes
       {
         path: 'reportes',
         alias: 'informes',
@@ -77,8 +96,18 @@ const routes = [
         props: { title: 'Reportes' },
         meta: { title: 'Reportes' },
       },
+
+      // Mi cuenta
+      {
+        path: 'mi-cuenta',
+        name: 'admin-mi-cuenta',
+        component: MiCuentaView,
+        meta: { title: 'Mi cuenta' },
+      },
     ],
   },
+
+  // Rutas no encontradas
   {
     path: '/:pathMatch(.*)*',
     redirect: '/login',
