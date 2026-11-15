@@ -300,34 +300,34 @@ body,
 
 .brand-content {
   width: 100%;
-  max-width: 340px;
+  max-width: 440px;
   text-align: center;
 }
 
 .brand-logo {
   display: block;
-  width: min(100%, 240px);
-  max-height: 190px;
+  width: min(100%, 280px);
+  max-height: 220px;
   object-fit: contain;
-  margin: 0 auto 22px;
+  margin: 0 auto 24px;
 }
 
 .brand-badge {
   display: inline-block;
-  padding: 5px 12px;
+  padding: 7px 16px;
   border: none;
   border-radius: 20px;
   background: #ffc400;
   color: #101b2b;
-  font-size: 9px;
+  font-size: 12px;
   font-weight: 700;
-  letter-spacing: 0;
+  letter-spacing: 0.5px;
 }
 
 .brand-description {
-  margin: 8px 0 0;
+  margin: 14px 0 0;
   color: #c5d0e1;
-  font-size: 11px;
+  font-size: 14px;
   line-height: 1.55;
 }
 
@@ -335,23 +335,24 @@ body,
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 32px;
+  padding: 40px;
   background: #f3f5fa;
 }
 
+/* MODIFICADO: Contenedor del formulario mucho más grande (520px) */
 .login-container {
   width: 100%;
-  max-width: 256px;
+  max-width: 520px; 
 }
 
 .form-header {
-  margin-bottom: 14px;
+  margin-bottom: 24px;
 }
 
 .form-header h1 {
-  margin: 0 0 5px;
+  margin: 0 0 10px;
   color: #111d31;
-  font-size: 22px;
+  font-size: 34px; 
   font-weight: 700;
   letter-spacing: -0.6px;
 }
@@ -359,40 +360,41 @@ body,
 .form-header p {
   margin: 0;
   color: #748096;
-  font-size: 10px;
+  font-size: 15px; 
   line-height: 1.5;
 }
 
 .form-group {
-  margin-bottom: 14px;
+  margin-bottom: 22px;
 }
 
 .form-group > label {
   display: block;
-  margin-bottom: 5px;
+  margin-bottom: 8px;
   color: #17243a;
-  font-size: 9px;
+  font-size: 14px;
   font-weight: 700;
 }
 
+/* MODIFICADO: Inputs mucho más grandes, altos y cómodos */
 .form-group input {
   width: 100%;
-  height: 31px;
-  min-height: 31px;
-  padding: 7px 10px;
+  height: 52px; 
+  min-height: 52px;
+  padding: 12px 18px;
   border: 1px solid #dce2ec;
-  border-radius: 6px;
+  border-radius: 10px;
   outline: none;
   background: #ffffff;
   color: #17243a;
   font-family: inherit;
-  font-size: 10px;
+  font-size: 16px;
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .form-group input:focus {
   border-color: #244c78;
-  box-shadow: 0 0 0 2px rgb(36 76 120 / 10%);
+  box-shadow: 0 0 0 3px rgb(36 76 120 / 10%);
 }
 
 .form-group input::placeholder {
@@ -404,18 +406,18 @@ body,
 }
 
 .password-container input {
-  padding-right: 35px;
+  padding-right: 50px;
 }
 
 .eye-button {
   position: absolute;
   top: 50%;
-  right: 7px;
+  right: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 23px;
-  height: 23px;
+  width: 32px;
+  height: 32px;
   padding: 3px;
   border: none;
   background: transparent;
@@ -425,31 +427,31 @@ body,
 }
 
 .eye-button svg {
-  width: 15px;
-  height: 15px;
+  width: 22px;
+  height: 22px;
 }
 
 .form-options {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 5px;
-  margin: 1px 0 20px;
+  gap: 12px;
+  margin: 6px 0 28px;
 }
 
 .remember-option {
   display: flex;
   align-items: center;
-  gap: 7px;
+  gap: 10px;
   color: #536078;
-  font-size: 9px;
+  font-size: 14px;
   white-space: nowrap;
   cursor: pointer;
 }
 
 .remember-option input {
-  width: 13px;
-  height: 13px;
+  width: 18px;
+  height: 18px;
   margin: 0;
   accent-color: #183d64;
   cursor: pointer;
@@ -457,7 +459,7 @@ body,
 
 .forgot-link {
   color: #173b61;
-  font-size: 9px;
+  font-size: 14px;
   font-weight: 700;
   text-decoration: none;
   white-space: nowrap;
@@ -467,20 +469,21 @@ body,
   text-decoration: underline;
 }
 
+/* MODIFICADO: Botón grande y llamativo */
 .login-button {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 10px;
   width: 100%;
-  min-height: 34px;
-  padding: 9px 14px;
+  min-height: 52px; 
+  padding: 12px 20px;
   border: none;
-  border-radius: 7px;
+  border-radius: 10px;
   background: #1b365d;
   color: #ffffff;
   font-family: inherit;
-  font-size: 10px;
+  font-size: 16px; 
   font-weight: 700;
   cursor: pointer;
   transition: background 0.2s, transform 0.2s;
@@ -500,10 +503,10 @@ body,
 }
 
 .message {
-  margin-bottom: 12px;
-  padding: 10px;
-  border-radius: 6px;
-  font-size: 11px;
+  margin-bottom: 16px;
+  padding: 14px;
+  border-radius: 8px;
+  font-size: 14px;
   line-height: 1.5;
   overflow-wrap: anywhere;
 }
@@ -521,8 +524,8 @@ body,
 }
 
 .spinner {
-  width: 14px;
-  height: 14px;
+  width: 18px;
+  height: 18px;
   border: 2px solid rgb(255 255 255 / 45%);
   border-top-color: #ffffff;
   border-radius: 50%;
@@ -535,40 +538,40 @@ body,
   }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 768px) {
   .login-page {
     grid-template-columns: 1fr;
   }
 
   .brand-panel {
-    min-height: 230px;
-    padding: 25px 20px;
+    min-height: 250px;
+    padding: 30px 20px;
   }
 
   .brand-content {
-    max-width: 300px;
+    max-width: 400px;
   }
 
   .brand-logo {
-    width: min(100%, 180px);
-    max-height: 105px;
+    width: min(100%, 200px);
+    max-height: 120px;
     margin-bottom: 15px;
   }
 
   .brand-description {
-    font-size: 11px;
+    font-size: 13px;
   }
 
   .form-panel {
-    padding: 38px 24px 45px;
+    padding: 40px 24px;
   }
 
   .login-container {
-    max-width: 320px;
+    max-width: 100%;
   }
 }
 
-@media (max-width: 360px) {
+@media (max-width: 400px) {
   .form-options {
     flex-wrap: wrap;
   }

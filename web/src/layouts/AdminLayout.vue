@@ -1,4 +1,3 @@
-
 <template>
   <div class="admin-layout">
     <!-- Barra lateral -->
@@ -140,15 +139,15 @@ const iniciales = computed(() => {
     .split(/\s+/)
     .filter(Boolean)
 
-if (palabras.length >= 2) {
-  const primera = palabras[0] ?? ''
-  const segunda = palabras[1] ?? ''
+  if (palabras.length >= 2) {
+    const primera = palabras[0] ?? ''
+    const segunda = palabras[1] ?? ''
 
-  return (
-    primera.charAt(0) +
-    segunda.charAt(0)
-  ).toUpperCase()
-}
+    return (
+      primera.charAt(0) +
+      segunda.charAt(0)
+    ).toUpperCase()
+  }
 
   return nombreUsuario.value.substring(0, 2).toUpperCase()
 })
@@ -166,16 +165,19 @@ if (palabras.length >= 2) {
   font-family: Arial, Helvetica, sans-serif;
 }
 
-/* Barra lateral */
+/* Barra lateral fija */
 .sidebar {
+  position: sticky;
+  top: 0;
   width: 250px;
   min-width: 250px;
-  min-height: 100vh;
+  height: 100vh; /* Ocupa exactamente la altura de la pantalla */
   padding: 20px 12px 16px;
   background-color: #1d355b;
   color: #ffffff;
   display: flex;
   flex-direction: column;
+  overflow-y: auto; /* Por si el menú es muy largo en pantallas pequeñas */
 }
 
 /* Logo */
@@ -235,7 +237,7 @@ if (palabras.length >= 2) {
   font-size: 13px;
 }
 
-/* Zona inferior del menú */
+/* Zona inferior del menú: Se mantiene pegada abajo gracias a flexbox y height 100vh */
 .sidebar-footer {
   margin-top: auto;
   padding-top: 12px;
