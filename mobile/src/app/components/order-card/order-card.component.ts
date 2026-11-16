@@ -8,7 +8,7 @@ import { formatDay } from '../../utils/date-format';
 import { formatOrderNumber } from '../../utils/order-status';
 import { OrderStatusBadgeComponent } from '../order-status-badge/order-status-badge.component';
 
-// Tarjeta del historial: GET orders no trae productos, así que solo muestra número, fecha, estado y total
+// Tarjeta del historial: muestra número, fecha, estado y total del pedido
 @Component({
   selector: 'app-order-card',
   templateUrl: './order-card.component.html',

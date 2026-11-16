@@ -71,7 +71,7 @@ export class OrderDetailPage {
   readonly order = signal<OrderDetail | null>(null);
   readonly skeletons = [1, 2];
 
-  // El pedido no trae el nombre del negocio: se usa el guardado al iniciar sesión (o el del encargado)
+  // Nombre del negocio guardado al iniciar sesión (o el del encargado)
   readonly businessName = signal<string | null>(null);
 
   // Ítems cuya imagen no cargó: se muestra el fondo pastel con el ícono de respaldo, igual que en el carrito

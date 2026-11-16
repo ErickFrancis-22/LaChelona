@@ -3,6 +3,10 @@
 
 // Paleta de La ChelonApp
 :root {
+  // Misma fuente que el panel web (Arial solo tiene 400 y 700: 600/800 se ven como 700)
+  --ion-font-family: Arial, Helvetica, sans-serif;
+
+
   --ion-color-primary: #1e2f55;
   --ion-color-primary-rgb: 30, 47, 85;
   --ion-color-primary-contrast: #ffffff;

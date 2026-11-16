@@ -33,7 +33,6 @@ export interface ProfileResponse {
   };
 }
 
-// El backend pide `name` (usuario) y `contact_name` (encargado) por separado: la app envía el mismo nombre en ambos
 export interface UpdateProfileRequest {
   name: string;
   email: string;

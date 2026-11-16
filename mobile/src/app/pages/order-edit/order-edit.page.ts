@@ -110,7 +110,7 @@ export class OrderEditPage {
   readonly saving = signal(false);
   private readonly snapshot = signal<Snapshot | null>(null);
 
-  // El pedido no trae el nombre del negocio: se usa el guardado al iniciar sesión (o el del encargado)
+  // Nombre del negocio guardado al iniciar sesión (o el del encargado)
   readonly businessName = signal<string | null>(null);
 
   // Productos cuya imagen no cargó: se muestra el fondo pastel con el ícono de respaldo

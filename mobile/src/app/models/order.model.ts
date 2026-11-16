@@ -2,7 +2,6 @@ import { PackageType } from './product.model';
 
 export type OrderStatus = 'PENDING' | 'CONFIRMED' | 'IN_TRANSIT' | 'DELIVERED' | 'CANCELLED';
 
-// El backend no valida ni guarda comentarios por producto: cada ítem lleva solo producto y cantidad
 export interface CreateOrderItem {
   product_id: number;
   quantity: number;

@@ -32,7 +32,6 @@ export class ProfileService {
     return this.api.get<ProfileResponse>('profile').pipe(map(toProfile));
   }
 
-  // El backend solo responde { message }: la página arma el perfil actualizado con lo que envió
   updateProfile(data: UpdateProfileRequest): Observable<MessageResponse> {
     return this.api.put<MessageResponse>('profile', data);
   }
