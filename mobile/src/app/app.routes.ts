@@ -63,6 +63,12 @@ export const routes: Routes = [
     canActivate: [authGuard],
     loadComponent: () => import('./pages/order-detail/order-detail.page').then((m) => m.OrderDetailPage),
   },
+  // Edición de un pedido PENDING: también fuera de las pestañas, con barra inferior propia (Guardar / Descartar)
+  {
+    path: 'orders/:id/edit',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/order-edit/order-edit.page').then((m) => m.OrderEditPage),
+  },
   // Agregar aquí las futuras páginas del proyecto
   {
     path: '',

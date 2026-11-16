@@ -2,7 +2,6 @@ import { PackageType } from './product.model';
 
 export type OrderStatus = 'PENDING' | 'CONFIRMED' | 'IN_TRANSIT' | 'DELIVERED' | 'CANCELLED';
 
-// El backend no valida ni guarda comentarios por producto: cada ítem lleva solo producto y cantidad
 export interface CreateOrderItem {
   product_id: number;
   quantity: number;
@@ -12,6 +11,9 @@ export interface CreateOrderRequest {
   customer_comment: string | null;
   items: CreateOrderItem[];
 }
+
+// PUT orders/{id}: mismas reglas que al crear; el backend reemplaza todos los productos y recalcula el total
+export type UpdateOrderRequest = CreateOrderRequest;
 
 // Solo se tipan los campos que usa la app; la respuesta también trae dirección de entrega y details.product
 export interface Order {
@@ -86,4 +88,15 @@ export interface ApiOrderDetail
 
 export interface OrderDetailResponse {
   data: ApiOrderDetail;
+}
+
+export interface UpdateOrderResponse {
+  message: string;
+  data: ApiOrderDetail;
+}
+
+// PATCH orders/{id}/cancel: devuelve el pedido sin productos, ya con status CANCELLED
+export interface CancelOrderResponse {
+  message: string;
+  data: Order;
 }

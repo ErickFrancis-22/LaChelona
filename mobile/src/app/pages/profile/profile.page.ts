@@ -70,7 +70,6 @@ const ERROR_MESSAGES: Record<string, Record<string, string>> = {
   },
 };
 
-// El backend valida `name` (usuario), pero la app lo llena con el nombre del encargado
 const API_TO_FIELD: Record<string, ProfileField> = {
   name: 'contact_name',
 };
@@ -254,7 +253,6 @@ export class ProfilePage implements OnDestroy {
       next: async () => {
         await loading.dismiss();
         this.saving.set(false);
-        // El backend no devuelve el perfil: se arma con lo que se envió
         this.profile.update((profile) => profile && { ...profile, ...request });
         this.auth.saveNames(request.name, request.business_name);
         this.stopEditing();

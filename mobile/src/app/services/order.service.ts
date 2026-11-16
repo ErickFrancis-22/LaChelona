@@ -3,16 +3,40 @@ import { Observable, map } from 'rxjs';
 import { ApiService } from './api.service';
 import { CartItem } from '../models/cart.model';
 import {
+  ApiOrderDetail,
+  CancelOrderResponse,
   CreateOrderRequest,
   CreateOrderResponse,
   OrderDetail,
   OrderDetailResponse,
   OrderSummary,
   OrdersResponse,
+  UpdateOrderRequest,
+  UpdateOrderResponse,
 } from '../models/order.model';
 import { resolveImageUrl } from '../utils/image-url';
 
 const toNumberOrNull = (value: string | number | null): number | null => (value === null ? null : Number(value));
+
+// Laravel envía decimales como string e image_url como ruta relativa
+const toOrderDetail = (data: ApiOrderDetail): OrderDetail => ({
+  ...data,
+  total: Number(data.total),
+  delivery_latitude: toNumberOrNull(data.delivery_latitude),
+  delivery_longitude: toNumberOrNull(data.delivery_longitude),
+  details: data.details.map((item) => ({
+    ...item,
+    unit_price: Number(item.unit_price),
+    subtotal: Number(item.subtotal),
+    product: item.product && { ...item.product, image_url: resolveImageUrl(item.product.image_url) },
+  })),
+});
+
+// Pedido de la app (carrito o pedido en edición) → cuerpo que esperan POST y PUT orders
+const toOrderRequest = (items: CartItem[], customerComment: string): CreateOrderRequest => ({
+  customer_comment: customerComment.trim() || null,
+  items: items.map(({ product, quantity }) => ({ product_id: product.id, quantity })),
+});
 
 @Injectable({ providedIn: 'root' })
 export class OrderService {
@@ -20,11 +44,7 @@ export class OrderService {
 
   // El backend recalcula precios y total, revisa el stock y toma la dirección guardada del cliente
   createOrder(items: CartItem[], customerComment: string): Observable<CreateOrderResponse> {
-    const body: CreateOrderRequest = {
-      customer_comment: customerComment.trim() || null,
-      items: items.map(({ product, quantity }) => ({ product_id: product.id, quantity })),
-    };
-    return this.api.post<CreateOrderResponse>('orders', body);
+    return this.api.post<CreateOrderResponse>('orders', toOrderRequest(items, customerComment));
   }
 
   // Pedidos del cliente autenticado, del más reciente al más antiguo
@@ -36,19 +56,18 @@ export class OrderService {
 
   // 404 si el pedido no existe o es de otro cliente
   getOrder(id: number): Observable<OrderDetail> {
-    return this.api.get<OrderDetailResponse>(`orders/${id}`).pipe(
-      map(({ data }) => ({
-        ...data,
-        total: Number(data.total),
-        delivery_latitude: toNumberOrNull(data.delivery_latitude),
-        delivery_longitude: toNumberOrNull(data.delivery_longitude),
-        details: data.details.map((item) => ({
-          ...item,
-          unit_price: Number(item.unit_price),
-          subtotal: Number(item.subtotal),
-          product: item.product && { ...item.product, image_url: resolveImageUrl(item.product.image_url) },
-        })),
-      })),
-    );
+    return this.api.get<OrderDetailResponse>(`orders/${id}`).pipe(map(({ data }) => toOrderDetail(data)));
+  }
+
+  // Solo PENDING: si el pedido cambió de estado responde 422 en `order` (ver isOrderLockedError).
+  // Reemplaza todos los productos; la dirección de entrega no cambia
+  updateOrder(id: number, items: CartItem[], customerComment: string): Observable<OrderDetail> {
+    const body: UpdateOrderRequest = toOrderRequest(items, customerComment);
+    return this.api.put<UpdateOrderResponse>(`orders/${id}`, body).pipe(map(({ data }) => toOrderDetail(data)));
+  }
+
+  // Solo PENDING, igual que updateOrder
+  cancelOrder(id: number): Observable<CancelOrderResponse> {
+    return this.api.patch<CancelOrderResponse>(`orders/${id}/cancel`, {});
   }
 }

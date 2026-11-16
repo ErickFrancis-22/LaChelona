@@ -12,10 +12,11 @@ import {
   ToastController,
 } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { alertCircleOutline, clipboardOutline, createOutline, informationCircle } from 'ionicons/icons';
+import { alertCircleOutline, clipboardOutline, createOutline } from 'ionicons/icons';
 import { Subscription, catchError, map, of, switchMap } from 'rxjs';
 import { OrderStatus, OrderSummary } from '../../models/order.model';
 import { OrderService } from '../../services/order.service';
+import { OrderActionsService } from '../../services/order-actions.service';
 import { OrderCardComponent } from '../../components/order-card/order-card.component';
 import { OrderTimelineComponent, TimelineOrder } from '../../components/order-timeline/order-timeline.component';
 import { StateViewComponent } from '../../components/state-view/state-view.component';
@@ -53,6 +54,7 @@ const FILTERS: { value: HistoryFilter; label: string; empty: string }[] = [
 })
 export class OrdersPage {
   private readonly orderService = inject(OrderService);
+  private readonly orderActions = inject(OrderActionsService);
   private readonly navCtrl = inject(NavController);
   private readonly router = inject(Router);
   private readonly toastCtrl = inject(ToastController);
@@ -88,7 +90,7 @@ export class OrdersPage {
   });
 
   constructor() {
-    addIcons({ alertCircleOutline, clipboardOutline, createOutline, informationCircle });
+    addIcons({ alertCircleOutline, clipboardOutline, createOutline });
   }
 
   // Se consulta cada vez que se entra a la pestaña (también al llegar desde el carrito tras confirmar un pedido)
@@ -162,9 +164,17 @@ export class OrdersPage {
     return status === 'PENDING';
   }
 
-  // Editar y cancelar se implementan en sus propios tickets
-  comingSoon(): void {
-    this.showToast('Esta opción estará disponible muy pronto.', 'information-circle');
+  // La edición vuelve a consultar el pedido: si ya no está PENDING lo avisa allí
+  editOrder(order: OrderSummary): void {
+    this.navCtrl.navigateForward(['/orders', order.id, 'edit']);
+  }
+
+  // Tras cancelar, o si el backend avisa que el pedido ya cambió de estado, se recarga para mostrar su estado real
+  async cancelOrder(order: OrderSummary): Promise<void> {
+    const result = await this.orderActions.confirmAndCancel(order.id);
+    if (result === 'cancelled' || result === 'locked') {
+      this.load();
+    }
   }
 
   private async showToast(message: string, icon: string): Promise<void> {

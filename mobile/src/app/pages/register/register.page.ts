@@ -196,7 +196,7 @@ export class RegisterPage {
 
     const request = this.buildRequest();
 
-    // El registro no devuelve token: se inicia sesión con las mismas credenciales para entrar directo al catálogo.
+    // Tras el registro se inicia sesión con las mismas credenciales para entrar directo al catálogo.
     // Si ese login falla la cuenta ya existe, así que se muestra el éxito igual y el botón lleva al login
     this.auth
       .register(request)

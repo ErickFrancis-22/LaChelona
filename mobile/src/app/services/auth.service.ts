@@ -20,7 +20,6 @@ export interface LoginResponse {
   };
 }
 
-// El backend pide el nombre dos veces: `name` (usuario) y `contact_name` (encargado del negocio)
 export interface RegisterRequest {
   name: string;
   username: string;
@@ -35,7 +34,6 @@ export interface RegisterRequest {
   longitude: number;
 }
 
-// El registro no devuelve token: el cliente inicia sesión después desde el login
 export interface RegisterResponse {
   message: string;
   user: {
@@ -57,7 +55,6 @@ export interface RegisterResponse {
   };
 }
 
-// El backend autentica a cualquier rol; la app móvil solo admite CLIENT
 export class RoleNotAllowedError extends Error {
   constructor() {
     super('Esta aplicación es solo para clientes.');
@@ -74,9 +71,8 @@ export class AuthService {
   private readonly api = inject(ApiService);
   private readonly cart = inject(CartService);
 
-  // El login no trae el nombre del negocio: se pide a GET profile para mostrarlo en "Entregar en".
+  // Tras el login se consulta GET profile para mostrar el nombre del negocio en "Entregar en".
   // Si esa consulta falla la sesión sigue igual y el catálogo usa el nombre del encargado.
-  // Un usuario que no es CLIENT no inicia sesión: su token se revoca y nunca se guarda
   login(credentials: LoginRequest): Observable<LoginResponse> {
     return this.api.post<LoginResponse>('auth/login', credentials).pipe(
       switchMap((res) => (res.user.role === 'CLIENT' ? of(res) : this.rejectRole(res.token))),

@@ -129,6 +129,17 @@
             }
           </div>
         </section>
+
+        <!-- Según el último estado consultado; el backend tiene la última palabra al editar o cancelar -->
+        @if (current.status === 'PENDING') {
+          <div class="actions">
+            <button class="edit-button" type="button" (click)="editOrder()">
+              <ion-icon name="create-outline" aria-hidden="true"></ion-icon>
+              Editar pedido
+            </button>
+            <button class="cancel-button" type="button" (click)="cancelOrder()">Cancelar pedido</button>
+          </div>
+        }
       }
     }
   }
