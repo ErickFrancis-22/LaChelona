@@ -1,0 +1,112 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar class="picker-toolbar">
+    <ion-title>Agregar productos</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="closed.emit()" aria-label="Cerrar">
+        <ion-icon slot="icon-only" name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+  <ion-toolbar class="picker-toolbar picker-toolbar--search">
+    <ion-searchbar
+      class="picker-search"
+      placeholder="Buscar por nombre o código"
+      aria-label="Buscar productos"
+      [debounce]="300"
+      [value]="search()"
+      (ionInput)="onSearch($event)"
+    ></ion-searchbar>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="picker-content">
+  @switch (status()) {
+    @case ('loading') {
+      <div aria-hidden="true">
+        @for (item of skeletons; track item) {
+          <div class="row">
+            <ion-skeleton-text class="skeleton-media" [animated]="true"></ion-skeleton-text>
+            <div class="row-info">
+              <ion-skeleton-text class="skeleton-line" [animated]="true"></ion-skeleton-text>
+              <ion-skeleton-text class="skeleton-line skeleton-line--short" [animated]="true"></ion-skeleton-text>
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+    @case ('error') {
+      <app-state-view
+        type="error"
+        title="No pudimos cargar los productos"
+        message="Revisa tu conexión e intenta de nuevo."
+        (retry)="load()"
+      />
+    }
+
+    @default {
+      @if (products().length === 0) {
+        <app-state-view title="Sin resultados" message="No encontramos productos con esa búsqueda." />
+      }
+      @for (product of products(); track product.id) {
+        <article class="row" [class.row--disabled]="inOrder(product) || soldOut(product)">
+          <div class="row-media" [style.background]="mediaColor(product)">
+            @if (showImage(product)) {
+              <img [src]="product.image_url" [alt]="product.name" (error)="onImageError(product.id)" />
+            } @else {
+              <ion-icon name="image-outline"></ion-icon>
+            }
+          </div>
+
+          <div class="row-info">
+            <h2 class="row-name">{{ product.name }}</h2>
+            <p class="row-package">{{ packageLabel(product) }}</p>
+          </div>
+
+          @if (inOrder(product)) {
+            <span class="row-tag">En el pedido</span>
+          } @else if (soldOut(product)) {
+            <span class="row-tag">Agotado</span>
+          } @else if (quantityOf(product) === 0) {
+            <button class="row-button" type="button" [attr.aria-label]="'Agregar ' + product.name" (click)="increase(product)">
+              <ion-icon name="add"></ion-icon>
+            </button>
+          } @else {
+            <!-- Mismo control que la edición del pedido: con cantidad 1 el botón de restar quita el producto -->
+            <div class="stepper" role="group" [attr.aria-label]="'Cantidad de ' + product.name">
+              @if (quantityOf(product) === 1) {
+                <button
+                  class="stepper-remove"
+                  type="button"
+                  [attr.aria-label]="'Quitar ' + product.name"
+                  (click)="decrease(product)"
+                >
+                  <ion-icon name="trash-outline"></ion-icon>
+                </button>
+              } @else {
+                <button type="button" [attr.aria-label]="'Quitar uno de ' + product.name" (click)="decrease(product)">
+                  <ion-icon name="remove"></ion-icon>
+                </button>
+              }
+              <span class="stepper-quantity" aria-live="polite">{{ quantityOf(product) }}</span>
+              <button
+                type="button"
+                [class.stepper--max]="quantityOf(product) >= product.stock"
+                [attr.aria-label]="'Agregar uno más de ' + product.name"
+                (click)="increase(product)"
+              >
+                <ion-icon name="add"></ion-icon>
+              </button>
+            </div>
+          }
+        </article>
+      }
+    }
+  }
+</ion-content>
+
+<ion-footer class="picker-footer ion-no-border">
+  <ion-button class="picker-confirm" expand="block" [disabled]="!hasSelection()" (click)="confirm()">
+    Agregar productos
+  </ion-button>
+</ion-footer>

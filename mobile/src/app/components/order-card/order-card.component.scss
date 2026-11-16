@@ -1,0 +1,47 @@
+:host {
+  display: block;
+}
+
+.order-card {
+  display: block;
+  width: 100%;
+  padding: 14px 16px;
+  border: 0;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgba(30, 47, 85, 0.08);
+  color: #1b1f2a;
+  font: inherit;
+  text-align: left;
+
+  &:active {
+    background: #f7f8fb;
+  }
+}
+
+.order-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  ion-icon {
+    flex-shrink: 0;
+    color: #5f6675;
+    font-size: 18px;
+  }
+}
+
+.order-card-title {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.order-card-total {
+  display: block;
+  margin-top: 8px;
+  font-size: 15px;
+  font-weight: 800;
+}

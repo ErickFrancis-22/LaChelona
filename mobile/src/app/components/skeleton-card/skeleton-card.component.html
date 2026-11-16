@@ -1,0 +1,13 @@
+<div class="skeleton" [class.skeleton--product]="variant() === 'product'">
+  <ion-skeleton-text class="skeleton-media" [animated]="true"></ion-skeleton-text>
+  <div class="skeleton-body">
+    <ion-skeleton-text class="skeleton-line skeleton-line--long" [animated]="true"></ion-skeleton-text>
+    <ion-skeleton-text class="skeleton-line skeleton-line--short" [animated]="true"></ion-skeleton-text>
+    @if (variant() === 'product') {
+      <div class="skeleton-footer">
+        <ion-skeleton-text class="skeleton-line skeleton-line--short" [animated]="true"></ion-skeleton-text>
+        <ion-skeleton-text class="skeleton-button" [animated]="true"></ion-skeleton-text>
+      </div>
+    }
+  </div>
+</div>

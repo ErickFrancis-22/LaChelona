@@ -1,0 +1,19 @@
+<ion-content class="success-content">
+  <div class="success">
+    <div class="success-icon">
+      <ion-icon name="checkmark"></ion-icon>
+    </div>
+    <h1 class="success-title">¡Tu cuenta está lista!</h1>
+    <p class="success-text">
+      <strong>{{ businessName() }}</strong> ya puede hacer pedidos.
+    </p>
+    <div class="success-user">
+      <span>Tu usuario para entrar</span>
+      <strong>{{ username() }}</strong>
+    </div>
+  </div>
+</ion-content>
+
+<ion-footer class="success-footer ion-no-border">
+  <ion-button class="success-button" expand="block" (click)="continue.emit()">Hacer mi primer pedido</ion-button>
+</ion-footer>
