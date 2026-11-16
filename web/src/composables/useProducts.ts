@@ -107,7 +107,10 @@ function getErrorMessage(error: any): string {
   return response?.message || error.message || 'Error inesperado.'
 }
 
-function buildFormData(data: ProductPayload): FormData {
+function buildFormData(
+  data: ProductPayload,
+  includeStock = true
+): FormData {
   const formData = new FormData()
 
   formData.append('category_id', String(data.category_id))
@@ -117,7 +120,9 @@ function buildFormData(data: ProductPayload): FormData {
   formData.append('units_per_package', String(data.units_per_package))
   formData.append('description', data.description)
   formData.append('sale_price', String(data.sale_price))
-  formData.append('stock', String(data.stock))
+  if (includeStock) {
+    formData.append('stock', String(data.stock))
+  }
   formData.append('minimum_stock', String(data.minimum_stock))
   formData.append('active', data.active ? '1' : '0')
 
@@ -205,10 +210,7 @@ export function useProducts() {
       let response
 
       if (image) {
-        const formData = buildFormData({
-          ...data,
-          stock: 0,
-        })
+       const formData = buildFormData(data, false)
 
         formData.append('_method', 'PUT')
 

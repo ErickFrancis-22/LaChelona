@@ -114,6 +114,7 @@ import ProductStatus from './ProductStatus.vue'
 
 interface Product {
   id: number
+  category_id: number
   name: string
   code: string
   category: string

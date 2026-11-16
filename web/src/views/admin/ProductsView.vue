@@ -25,6 +25,7 @@
         :saving="saving"
         @save="saveProduct"
         @cancel="closeForm"
+        @inventory-updated="handleInventoryUpdated"
       />
     </section>
 
@@ -249,6 +250,15 @@ function openEditProduct(
 function closeForm() {
   showForm.value = false
   editingProduct.value = null
+}
+
+async function handleInventoryUpdated() {
+  try {
+    await loadProducts()
+    console.log('Inventario actualizado correctamente')
+  } catch (error) {
+    console.error('Error al actualizar productos:', error)
+  }
 }
 
 async function saveProduct(data: ProductFormData) {
