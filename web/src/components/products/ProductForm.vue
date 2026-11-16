@@ -168,10 +168,18 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useCategories } from '../../composables/useCategories'
 
-const { categories } = useCategories()
+const { categories, loadCategories } = useCategories()
+
+onMounted(async () => {
+  try {
+    await loadCategories()
+  } catch (error) {
+    console.error('Error al cargar categorías:', error)
+  }
+})
 
 interface ProductFormData {
   id?: number
