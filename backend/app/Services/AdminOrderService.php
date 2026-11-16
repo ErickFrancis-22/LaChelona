@@ -119,6 +119,37 @@ class AdminOrderService
     }
 
     /**
+     * Cancela un pedido pendiente desde administración.
+     *
+     * PENDING -> CANCELLED
+     *
+     * No modifica el inventario porque este se descuenta
+     * únicamente cuando el pedido se confirma.
+     */
+    public function cancel(Order $order, User $user): Order
+    {
+        return DB::transaction(function () use ($order, $user) {
+
+            $order = Order::whereKey($order->id)
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            $this->ensureStatus(
+                $order,
+                'PENDING',
+                'Solo los pedidos pendientes pueden cancelarse.'
+            );
+
+            $order->status = 'CANCELLED';
+            $order->cancelled_at = now();
+            $order->cancelled_by = $user->id;
+            $order->save();
+
+            return $this->loadOrder($order);
+        });
+    }
+
+    /**
      * Valida que el pedido se encuentre exactamente
      * en el estado esperado.
      */

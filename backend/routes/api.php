@@ -72,6 +72,7 @@ Route::prefix('admin')
         Route::patch('/orders/{id}/confirm', [AdminOrderController::class, 'confirm']);
         Route::patch('/orders/{id}/in-transit', [AdminOrderController::class, 'markInTransit']);
         Route::patch('/orders/{id}/deliver', [AdminOrderController::class, 'deliver']);
+        Route::patch('/orders/{id}/cancel', [AdminOrderController::class, 'cancel']);
 
     //Comprobantes
         Route::post('/orders/{id}/invoice', [AdminInvoiceController::class, 'store']);
