@@ -1,0 +1,90 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.picker-toolbar {
+  --background: #ffffff;
+  --color: #1b1f2a;
+  --border-width: 0 0 1px;
+  --border-color: #e6e8ee;
+
+  ion-title {
+    font-size: 17px;
+    font-weight: 800;
+  }
+
+  ion-button {
+    --color: #1e2f55;
+  }
+}
+
+.picker-map {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.picker-hint {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  right: 12px;
+  z-index: 1000; // Leaflet usa z-index hasta 1000 para sus capas
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 2px 8px rgba(30, 47, 85, 0.15);
+  font-size: 13px;
+  line-height: 1.4;
+  color: #1b1f2a;
+
+  ion-spinner {
+    flex-shrink: 0;
+    width: 18px;
+    height: 18px;
+    color: #1e2f55;
+  }
+}
+
+.picker-locate {
+  position: absolute;
+  right: 12px;
+  bottom: 16px;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  border: 0;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 2px 8px rgba(30, 47, 85, 0.2);
+  color: #1e2f55;
+  font-size: 24px;
+}
+
+.picker-footer {
+  padding: 12px 24px calc(12px + var(--ion-safe-area-bottom, 0px));
+  background: #ffffff;
+  border-top: 1px solid #e6e8ee;
+}
+
+.picker-confirm {
+  --background: #1e2f55;
+  --background-activated: #16233f;
+  --color: #ffffff;
+  --border-radius: 12px;
+  --box-shadow: none;
+  height: 56px;
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  text-transform: none;
+  letter-spacing: 0;
+}

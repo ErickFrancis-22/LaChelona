@@ -1,0 +1,36 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar class="picker-toolbar">
+    <ion-title>Ubica tu negocio</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="cancelled.emit()" aria-label="Cerrar">
+        <ion-icon slot="icon-only" name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [scrollY]="false">
+  <!-- slot="fixed" deja el mapa fuera del scroll de ion-content para que arrastrar mueva el mapa -->
+  <div #map slot="fixed" class="picker-map"></div>
+
+  <div slot="fixed" class="picker-hint">
+    @if (locating()) {
+      <ion-spinner name="crescent"></ion-spinner>
+      <span>Buscando tu ubicación...</span>
+    } @else if (locationError()) {
+      <span>{{ locationError() }}</span>
+    } @else {
+      <span>Arrastra el pin o toca el mapa para marcar la entrada de tu negocio.</span>
+    }
+  </div>
+
+  <button slot="fixed" class="picker-locate" type="button" (click)="locate()" aria-label="Usar mi ubicación actual">
+    <ion-icon name="locate-outline"></ion-icon>
+  </button>
+</ion-content>
+
+<ion-footer class="picker-footer ion-no-border">
+  <ion-button class="picker-confirm" expand="block" [disabled]="!hasPosition()" (click)="confirm()">
+    Confirmar ubicación
+  </ion-button>
+</ion-footer>

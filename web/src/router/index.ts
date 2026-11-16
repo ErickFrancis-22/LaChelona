@@ -1,0 +1,122 @@
+
+import { createRouter, createWebHistory } from 'vue-router'
+
+import AdminLayout from '../layouts/AdminLayout.vue'
+import DashboardView from '../views/admin/DashboardView.vue'
+import LoginView from '../LoginView.vue'
+import ClientesView from '../ClientesView.vue'
+import ProductsView from '../views/admin/ProductsView.vue'
+import CategoriesView from '../views/admin/CategoriesView.vue'
+import ReportsView from '../views/admin/ReportsView.vue'
+import MiCuentaView from '../views/admin/MiCuentaView.vue'
+
+const PlaceholderView = {
+  template: `
+    <section class="placeholder-view">
+      <h2>{{ title }}</h2>
+      <p>La vista de este módulo se desarrollará en su ticket correspondiente.</p>
+    </section>
+  `,
+  props: ['title'],
+}
+
+const routes = [
+  {
+    path: '/',
+    redirect: '/login',
+  },
+
+  // Inicio de sesión
+  {
+    path: '/login',
+    name: 'login',
+    component: LoginView,
+  },
+
+  // Módulo administrativo
+  {
+    path: '/admin',
+    component: AdminLayout,
+    children: [
+
+      // Dashboard
+      {
+        path: '',
+        name: 'admin-dashboard',
+        component: DashboardView,
+        meta: { title: 'Panel administrativo' },
+      },
+
+      // Clientes
+      {
+        path: 'clientes',
+        name: 'admin-clientes',
+        component: ClientesView,
+        meta: { title: 'Clientes' },
+      },
+
+      // Productos
+      {
+        path: 'productos',
+        name: 'admin-productos',
+        component: ProductsView,
+        meta: { title: 'Productos' },
+      },
+
+      // Pedidos
+      {
+        path: 'pedidos',
+        name: 'admin-pedidos',
+        component: DashboardView,
+        meta: { title: 'Pedidos del día' },
+      },
+
+      // Categorías
+      {
+        path: 'categorias',
+        name: 'admin-categorias',
+        component: CategoriesView,
+        meta: { title: 'Categorías' },
+      },
+
+      // Inventario
+      {
+        path: 'inventario',
+        name: 'admin-inventario',
+        component: PlaceholderView,
+        props: { title: 'Inventario' },
+        meta: { title: 'Inventario' },
+      },
+
+      // Reportes
+      {
+        path: 'reportes',
+        alias: 'informes',
+        name: 'admin-reportes',
+        component: ReportsView,
+        meta: { title: 'Reportes mensuales' },
+      },
+
+      // Mi cuenta
+      {
+        path: 'mi-cuenta',
+        name: 'admin-mi-cuenta',
+        component: MiCuentaView,
+        meta: { title: 'Mi cuenta' },
+      },
+    ],
+  },
+
+  // Rutas no encontradas
+  {
+    path: '/:pathMatch(.*)*',
+    redirect: '/login',
+  },
+]
+
+const router = createRouter({
+  history: createWebHistory(import.meta.env.BASE_URL),
+  routes,
+})
+
+export default router

@@ -1,0 +1,50 @@
+.state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 48px 24px;
+  text-align: center;
+}
+
+.state-icon {
+  display: grid;
+  place-items: center;
+  width: 72px;
+  height: 72px;
+  margin-bottom: 16px;
+  border-radius: 50%;
+  background: #fff1c2;
+  color: #1e2f55;
+  font-size: 34px;
+}
+
+.state--error .state-icon {
+  background: #f2dad5;
+  color: #b3261e;
+}
+
+.state-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 800;
+  color: #1b1f2a;
+}
+
+.state-message {
+  max-width: 280px;
+  margin: 8px 0 0;
+  font-size: 14px;
+  color: #5f6675;
+}
+
+.state-retry {
+  --background: #1e2f55;
+  --background-activated: #16233f;
+  --border-radius: 12px;
+  --box-shadow: none;
+  height: 46px;
+  margin-top: 20px;
+  font-weight: 700;
+  text-transform: none;
+  letter-spacing: 0;
+}

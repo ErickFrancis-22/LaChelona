@@ -1,0 +1,15 @@
+<ol class="timeline">
+  @for (step of steps(); track step.label) {
+    <li class="step" [class]="'step step--' + step.state" [attr.aria-current]="step.state === 'current' ? 'step' : null">
+      <span class="step-marker" aria-hidden="true">
+        @if (step.state === 'done') {
+          <ion-icon name="checkmark"></ion-icon>
+        }
+      </span>
+      <div class="step-text">
+        <span class="step-label">{{ step.label }}</span>
+        <span class="step-hint">{{ step.hint }}</span>
+      </div>
+    </li>
+  }
+</ol>

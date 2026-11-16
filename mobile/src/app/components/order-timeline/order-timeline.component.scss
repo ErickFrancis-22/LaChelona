@@ -1,0 +1,76 @@
+// Va sobre la tarjeta azul del pedido en curso
+.timeline {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.step {
+  position: relative;
+  display: flex;
+  gap: 14px;
+  padding-bottom: 14px;
+
+  &:last-child {
+    padding-bottom: 0;
+  }
+
+  // Línea vertical hacia el siguiente paso; amarilla cuando el paso ya se completó
+  &:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    top: 24px;
+    bottom: 0;
+    left: 11px;
+    width: 2px;
+    background: rgba(255, 255, 255, 0.25);
+  }
+
+  &--done:not(:last-child)::after {
+    background: #ffc107;
+  }
+}
+
+.step-marker {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-radius: 50%;
+  color: #1e2f55;
+  font-size: 14px;
+
+  .step--current & {
+    border-color: #ffc107;
+  }
+
+  .step--done & {
+    border-color: #ffc107;
+    background: #ffc107;
+  }
+}
+
+.step-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding-top: 2px;
+}
+
+.step-label {
+  font-size: 15px;
+  font-weight: 800;
+  color: #ffffff;
+
+  .step--upcoming & {
+    color: rgba(255, 255, 255, 0.7);
+  }
+}
+
+.step-hint {
+  margin-top: 2px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.75);
+}

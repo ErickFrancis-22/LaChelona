@@ -1,0 +1,67 @@
+<ion-header class="ion-no-border">
+  <div class="hero">
+    <div class="hero-nav">
+      <button class="back-button" type="button" aria-label="Volver a categorías" (click)="goBack()">
+        <ion-icon name="chevron-back"></ion-icon>
+      </button>
+      <div>
+        <p class="hero-label">Categoría</p>
+        <h1 class="hero-title">{{ categoryName() || 'Productos' }}</h1>
+      </div>
+    </div>
+    <ion-searchbar
+      class="hero-search"
+      [placeholder]="categoryName() ? 'Buscar en ' + categoryName() : 'Buscar productos'"
+      [value]="searchTerm()"
+      [disabled]="!categoryFound()"
+      (ionInput)="onSearch($event)"
+    ></ion-searchbar>
+  </div>
+</ion-header>
+
+<ion-content class="products-content">
+  <div class="section-header">
+    <h2 class="section-title">Productos</h2>
+    @if (status() === 'ready') {
+      <span class="section-hint">{{ productsLabel() }}</span>
+    }
+  </div>
+
+  @switch (status()) {
+    @case ('loading') {
+      <div class="grid">
+        @for (item of skeletons; track item) {
+          <app-skeleton-card variant="product" />
+        }
+      </div>
+    }
+    @case ('error') {
+      <app-state-view
+        type="error"
+        title="Sin conexión"
+        message="No pudimos cargar los productos. Revisa tu conexión e intenta de nuevo."
+        (retry)="load()"
+      />
+    }
+    @default {
+      @if (!categoryFound()) {
+        <app-state-view title="Categoría no disponible" message="Esta categoría ya no está disponible en el catálogo." />
+      } @else if (products().length) {
+        <div class="grid">
+          @for (product of products(); track product.id) {
+            <app-product-card [product]="product" />
+          }
+        </div>
+      } @else if (searchTerm()) {
+        <app-state-view
+          title="Sin resultados"
+          [message]="'No encontramos productos que coincidan con “' + searchTerm() + '” en ' + categoryName() + '.'"
+        />
+      } @else {
+        <app-state-view title="Sin productos" message="Esta categoría aún no tiene productos disponibles." />
+      }
+    }
+  }
+</ion-content>
+
+<app-client-footer />

@@ -1,0 +1,126 @@
+<ion-header class="ion-no-border">
+  <div class="header">
+    <button class="back-button" type="button" aria-label="Volver al catálogo" (click)="goBack()">
+      <ion-icon name="chevron-back"></ion-icon>
+    </button>
+    <h1 class="header-title">Tu pedido</h1>
+    @if (!cart.isEmpty()) {
+      <button class="clear-button" type="button" (click)="confirmClear()">Vaciar</button>
+    }
+  </div>
+</ion-header>
+
+<ion-content class="cart-content">
+  <!-- Solo se ve si se entra a /cart sin productos o si la sincronización quitó todos -->
+  @if (cart.isEmpty()) {
+    <app-state-view title="Tu carrito está vacío" message="Agrega productos desde el catálogo para armar tu pedido." />
+    <button class="catalog-button" type="button" (click)="goBack()">Ir al catálogo</button>
+  } @else {
+    <section class="card items" aria-label="Productos del pedido">
+      @for (item of cart.items(); track item.product.id) {
+        <article class="item">
+          <div class="item-media" [style.background]="mediaColor(item.product)">
+            @if (showImage(item.product)) {
+              <img [src]="item.product.image_url" [alt]="item.product.name" (error)="onImageError(item.product.id)" />
+            } @else {
+              <ion-icon name="image-outline"></ion-icon>
+            }
+          </div>
+
+          <div class="item-info">
+            <h2 class="item-name">{{ item.product.name }}</h2>
+            <p class="item-package">{{ packageLabel(item.product) }}</p>
+            <span class="item-subtotal">
+              {{ item.product.sale_price * item.quantity | currency: 'USD' : 'symbol' : '1.2-2' }}
+            </span>
+          </div>
+
+          <div class="stepper" role="group" [attr.aria-label]="'Cantidad de ' + item.product.name">
+            <!-- Con cantidad 1 el botón de restar quita el producto -->
+            @if (item.quantity === 1) {
+              <button
+                class="stepper-remove"
+                type="button"
+                [attr.aria-label]="'Quitar ' + item.product.name + ' del pedido'"
+                (click)="decrease(item.product)"
+              >
+                <ion-icon name="trash-outline"></ion-icon>
+              </button>
+            } @else {
+              <button type="button" [attr.aria-label]="'Quitar uno de ' + item.product.name" (click)="decrease(item.product)">
+                <ion-icon name="remove"></ion-icon>
+              </button>
+            }
+            <span class="stepper-quantity" aria-live="polite">{{ item.quantity }}</span>
+            <button
+              type="button"
+              [class.stepper--max]="item.quantity >= item.product.stock"
+              [attr.aria-label]="'Agregar uno más de ' + item.product.name"
+              (click)="cart.increase(item.product)"
+            >
+              <ion-icon name="add"></ion-icon>
+            </button>
+          </div>
+        </article>
+      }
+    </section>
+
+    <section class="card delivery" aria-label="Dirección de entrega">
+      <div class="delivery-icon">
+        <ion-icon name="location-outline"></ion-icon>
+      </div>
+      <div class="delivery-info">
+        <p class="delivery-label">Entregar en</p>
+        @switch (profileStatus()) {
+          @case ('loading') {
+            <ion-skeleton-text class="skeleton-line skeleton-line--title" [animated]="true"></ion-skeleton-text>
+            <ion-skeleton-text class="skeleton-line" [animated]="true"></ion-skeleton-text>
+          }
+          @case ('error') {
+            <p class="delivery-error">No pudimos cargar tu dirección. El pedido se entregará en la dirección de tu perfil.</p>
+            <button class="retry-button" type="button" (click)="loadProfile()">Reintentar</button>
+          }
+          @default {
+            <h2 class="delivery-name">{{ profile()?.business_name }}</h2>
+            <p class="delivery-address">{{ profile()?.address }}</p>
+            <!-- Opcional en el backend: clientes antiguos pueden no tenerla -->
+            @if (profile()?.address_reference; as reference) {
+              <p class="delivery-reference">Referencia: {{ reference }}</p>
+            }
+          }
+        }
+      </div>
+    </section>
+
+    <section class="card note">
+      <span class="field-label">Nota para el repartidor (opcional)</span>
+      <ion-textarea
+        aria-label="Nota para el repartidor"
+        class="note-input"
+        placeholder="Ej. entregar por la puerta lateral"
+        [autoGrow]="true"
+        [rows]="2"
+        [maxlength]="commentMaxLength"
+        [counter]="comment().length > commentMaxLength - 100"
+        [ngModel]="comment()"
+        (ngModelChange)="comment.set($event ?? '')"
+      ></ion-textarea>
+    </section>
+  }
+</ion-content>
+
+@if (!cart.isEmpty()) {
+  <ion-footer class="ion-no-border">
+    <div class="summary">
+      <div class="summary-row">
+        <span>Subtotal</span>
+        <span>{{ cart.total() | currency: 'USD' : 'symbol' : '1.2-2' }}</span>
+      </div>
+      <div class="summary-row summary-row--total">
+        <span>Total</span>
+        <span>{{ cart.total() | currency: 'USD' : 'symbol' : '1.2-2' }}</span>
+      </div>
+      <button class="confirm-button" type="button" (click)="submit()">Confirmar pedido</button>
+    </div>
+  </ion-footer>
+}
