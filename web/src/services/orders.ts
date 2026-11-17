@@ -1,5 +1,5 @@
-import api from './api'
 
+import api from './api'
 
 export type EstadoPedido =
   | 'PENDING'
@@ -8,13 +8,11 @@ export type EstadoPedido =
   | 'DELIVERED'
   | 'CANCELLED'
 
-
 export interface FiltrosPedidos {
   status?: EstadoPedido
   date?: string
   search?: string
 }
-
 
 export interface ResumenPedidos {
   PENDING: number
@@ -23,8 +21,6 @@ export interface ResumenPedidos {
   DELIVERED: number
   CANCELLED: number
 }
-
-
 
 export interface ClientePedido {
   id?: number
@@ -35,8 +31,6 @@ export interface ClientePedido {
   address?: string | null
   address_reference?: string | null
 }
-
-
 
 export interface PedidoListado {
   id: number
@@ -52,7 +46,6 @@ export interface PedidoListado {
 
   client?: ClientePedido | null
 }
-
 
 export interface ProductoPedido {
   id: number
@@ -77,8 +70,6 @@ export interface ProductoPedido {
   } | null
 }
 
-
-
 export interface MovimientoInventarioPedido {
   id?: number
   product_id: number
@@ -90,7 +81,6 @@ export interface MovimientoInventarioPedido {
   reason?: string | null
   created_at: string
 }
-
 
 export interface PedidoDetalle extends PedidoListado {
   customer_comment?: string | null
@@ -111,7 +101,6 @@ export interface PedidoDetalle extends PedidoListado {
   inventory_movements?: MovimientoInventarioPedido[]
 }
 
-
 export interface RespuestaApi<T> {
   data: T
   message?: string
@@ -121,8 +110,6 @@ export interface RespuestaListadoPedidos {
   data: PedidoListado[]
   summary: ResumenPedidos
 }
-
-
 
 export function crearResumenInicial(): ResumenPedidos {
   return {
@@ -134,24 +121,19 @@ export function crearResumenInicial(): ResumenPedidos {
   }
 }
 
-
-
 export async function listarPedidos(
   filtros: FiltrosPedidos = {},
 ): Promise<RespuestaListadoPedidos> {
   const params: FiltrosPedidos = {}
 
-  // Filtro por estado
   if (filtros.status) {
     params.status = filtros.status
   }
 
-  // Filtro por fecha
   if (filtros.date) {
     params.date = filtros.date
   }
 
-  // Búsqueda por número de pedido o negocio
   if (filtros.search?.trim()) {
     params.search = filtros.search.trim()
   }
@@ -166,7 +148,6 @@ export async function listarPedidos(
   return response.data
 }
 
-
 export async function obtenerPedido(
   id: number,
 ): Promise<PedidoDetalle> {
@@ -176,18 +157,12 @@ export async function obtenerPedido(
 
   const resultado = response.data
 
-  // Laravel puede devolver el pedido directamente
-  // o dentro de una propiedad llamada data.
-
   if ('data' in resultado) {
     return resultado.data
   }
 
   return resultado
 }
-
-
-
 
 export async function confirmarPedido(
   id: number,
@@ -201,9 +176,19 @@ export async function marcarPedidoEnTransito(
   await api.patch(`/admin/orders/${id}/in-transit`)
 }
 
-
 export async function marcarPedidoEntregado(
   id: number,
 ): Promise<void> {
   await api.patch(`/admin/orders/${id}/deliver`)
+}
+
+/**
+ * Cancela un pedido pendiente desde administración.
+ * Laravel valida que el pedido esté en estado PENDING.
+ * No elimina el pedido ni modifica el inventario.
+ */
+export async function cancelarPedido(
+  id: number,
+): Promise<void> {
+  await api.patch(`/admin/orders/${id}/cancel`)
 }
