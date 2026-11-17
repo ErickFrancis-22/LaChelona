@@ -132,6 +132,16 @@
           </button>
 
           <button
+            v-if="order.status === 'Pendientes'"
+            class="order-button cancel"
+            type="button"
+            :disabled="processingOrderId === order.id"
+            @click="cancelOrder(order.id)"
+          >
+            {{ processingOrderId === order.id ? 'Procesando...' : 'Cancelar pedido' }}
+          </button>
+
+          <button
             v-else-if="order.status === 'Confirmados'"
             class="order-button blue"
             type="button"
@@ -375,6 +385,7 @@ import {
   listarPedidos,
   obtenerPedido,
   confirmarPedido,
+  cancelarPedido,
   marcarPedidoEnTransito,
   marcarPedidoEntregado,
   crearResumenInicial,
@@ -980,6 +991,48 @@ async function toggleOrderDetail(id: number): Promise<void> {
 }
 
 
+async function cancelOrder(orderId: number): Promise<void> {
+  // Evita ejecutar más de una operación sobre pedidos al mismo tiempo.
+  if (processingOrderId.value !== null) return
+
+  const order = orders.value.find((item) => item.id === orderId)
+
+  // La opción de cancelar solo está disponible para pedidos pendientes.
+  if (!order || order.status !== 'Pendientes') return
+
+  const accepted = window.confirm(
+    `¿Seguro que deseas cancelar el pedido #${orderId}? El pedido no se eliminará ni se modificará el inventario.`,
+  )
+
+  if (!accepted) return
+
+  processingOrderId.value = orderId
+  errorMessage.value = ''
+
+  try {
+    // Laravel valida que el pedido todavía esté en estado PENDING.
+    await cancelarPedido(orderId)
+
+    // Actualiza las columnas y los contadores con la respuesta del servidor.
+    await loadOrders()
+
+    // Si el detalle de ese pedido estaba abierto, actualizarlo desde Laravel.
+    if (selectedOrderId.value === orderId) {
+      try {
+        orderDetail.value = await obtenerPedido(orderId)
+      } catch {
+        // La cancelación ya se completó; no revertirla por un error del detalle.
+        orderDetail.value = null
+      }
+    }
+  } catch (error) {
+    errorMessage.value = getErrorMessage(error)
+  } finally {
+    processingOrderId.value = null
+  }
+}
+
+
 async function changeStatus(orderId: number): Promise<void> {
   if (processingOrderId.value !== null) {
     return
@@ -1315,6 +1368,11 @@ onBeforeUnmount(() => {
 .order-button.primary {
   background: #ffc400;
   color: #263248;
+}
+
+.order-button.cancel {
+  background: #c83d4b;
+  color: #fff;
 }
 
 .order-button.blue {

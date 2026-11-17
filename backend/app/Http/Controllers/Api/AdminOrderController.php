@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
@@ -202,6 +201,24 @@ class AdminOrderController extends Controller
 
         return response()->json([
             'message' => 'Pedido marcado como entregado correctamente.',
+            'data' => $order,
+        ]);
+    }
+
+    /**
+     * PENDING -> CANCELLED
+     */
+    public function cancel(Request $request, int $id)
+    {
+        $order = Order::findOrFail($id);
+
+        $order = $this->adminOrderService->cancel(
+            $order,
+            $request->user()
+        );
+
+        return response()->json([
+            'message' => 'Pedido cancelado por el administrador correctamente.',
             'data' => $order,
         ]);
     }

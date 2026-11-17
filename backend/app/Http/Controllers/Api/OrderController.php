@@ -126,7 +126,7 @@ class OrderController extends Controller
     }
 
     /**
-     * Actualiza un pedido existente del cliente autenticado.
+     * Actualiza un pedido pendiente del cliente autenticado.
      */
     public function update(Request $request, int $id): JsonResponse
     {
@@ -140,21 +140,23 @@ class OrderController extends Controller
         $user = $request->user();
         $client = $this->orderService->getClientOrFail($user);
 
-        $order = Order::where('id', $id)
-            ->where('client_id', $client->id)
-            ->first();
+        $order = DB::transaction(function () use ($id, $client, $validated) {
 
-        if (! $order) {
-            return response()->json([
-                'message' => 'Pedido no encontrado.',
-            ], 404);
-        }
+            $order = Order::where('id', $id)
+                ->where('client_id', $client->id)
+                ->lockForUpdate()
+                ->first();
 
-        $this->orderService->ensureCanModify($order);
+            if (! $order) {
+                return null;
+            }
 
-        $prepared = $this->orderService->prepareItems($validated['items']);
+            $this->orderService->ensureCanModify($order);
 
-        DB::transaction(function () use ($order, $prepared, $validated) {
+            $prepared = $this->orderService->prepareItems(
+                $validated['items']
+            );
+
             $order->update([
                 'total' => $prepared['total'],
                 'customer_comment' => $validated['customer_comment'] ?? null,
@@ -170,7 +172,15 @@ class OrderController extends Controller
                     'subtotal' => $item['subtotal'],
                 ]);
             }
+
+            return $order;
         });
+
+        if (! $order) {
+            return response()->json([
+                'message' => 'Pedido no encontrado.',
+            ], 404);
+        }
 
         $order->load('details.product');
 
@@ -181,30 +191,40 @@ class OrderController extends Controller
     }
 
     /**
-     * Cancela un pedido del cliente autenticado.
+     * Cancela un pedido pendiente del cliente autenticado.
      */
     public function cancel(Request $request, int $id): JsonResponse
     {
         $user = $request->user();
         $client = $this->orderService->getClientOrFail($user);
 
-        $order = Order::where('id', $id)
-            ->where('client_id', $client->id)
-            ->first();
+        $order = DB::transaction(function () use ($id, $client, $user) {
+
+            $order = Order::where('id', $id)
+                ->where('client_id', $client->id)
+                ->lockForUpdate()
+                ->first();
+
+            if (! $order) {
+                return null;
+            }
+
+            $this->orderService->ensureCanCancel($order);
+
+            $order->update([
+                'status' => 'CANCELLED',
+                'cancelled_at' => now(),
+                'cancelled_by' => $user->id,
+            ]);
+
+            return $order;
+        });
 
         if (! $order) {
             return response()->json([
                 'message' => 'Pedido no encontrado.',
             ], 404);
         }
-
-        $this->orderService->ensureCanCancel($order);
-
-        $order->update([
-            'status' => 'CANCELLED',
-            'cancelled_at' => now(),
-            'cancelled_by' => $user->id,
-        ]);
 
         return response()->json([
             'message' => 'Pedido cancelado correctamente.',
